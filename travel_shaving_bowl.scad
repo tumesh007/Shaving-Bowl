@@ -50,6 +50,14 @@ de_blade_width = 22;
 de_blade_thickness = 0.25;
 blade_clearance = 0.4;
 
+// Personalization
+name_text = "Tumesh";
+name_font = "Pacifico"; // Install the Pacifico font locally before rendering.
+name_size = 8;
+name_depth = 0.8;
+name_z = 17;
+name_spacing = 1.0;
+
 function rand01(v) = fract(sin(v * 127.1 + 311.7) * 43758.5453123);
 function rand_signed(v) = rand01(v) * 2 - 1;
 function fract(v) = v - floor(v);
@@ -82,12 +90,8 @@ module bowl_shell() {
     difference() {
         rotate_extrude($fn=180)
             bowl_profile();
-
-        // Hollow inner volume
         translate([0, 0, base_thickness])
             cylinder(h = bowl_height, r = bowl_inner_diameter/2 - 0.3, $fn=180);
-
-        // Slightly trim the underside to create a flat stable base
         translate([0,0,-0.1])
             cylinder(h = base_thickness + 0.2, r = bowl_outer_diameter/2 - 1.0, $fn=180);
     }
@@ -130,7 +134,6 @@ module diamond_texture() {
             py = y * (diamond_length + diamond_spacing);
             if (px*px + py*py > inner_r*inner_r) continue;
             offset = (y % 2 == 0) ? 0 : (diamond_length + diamond_spacing) / 2.0;
-
             translate([px + offset, py, interior_depth - 1.7])
                 rotate([0, 0, 45])
                     scale([diamond_length * 0.55, diamond_width * 0.55, 1])
@@ -239,6 +242,15 @@ module blade_retainer() {
         cube([de_blade_width + 5, 2.5, 11], center=true);
 }
 
+// Embossed name on the front exterior wall. Pacifico must be installed locally.
+module name_marking() {
+    translate([0, -(bowl_outer_diameter / 2) - 0.05, name_z])
+        rotate([90, 0, 0])
+            linear_extrude(height = name_depth, center = false, convexity = 4)
+                text(name_text, size = name_size, font = name_font,
+                     halign = "center", valign = "center", spacing = name_spacing);
+}
+
 module assembly_preview() {
     color([0.8,0.84,0.9,1]) bowl_shell();
     color([0.7,0.9,0.95,0.7]) translate([0,0,base_thickness]) hybrid_texture();
@@ -248,17 +260,15 @@ module assembly_preview() {
     color([0.94,0.68,0.25,1]) razor_retention();
     color([0.88,0.60,0.20,1]) razor_head_support();
     color([0.55,0.58,0.62,1]) blade_drawer();
+    color([0.95,0.75,0.18,1]) name_marking();
 }
 
 if (render_mode == "assembly") {
     assembly_preview();
 } else if (render_mode == "texture_coupon") {
-    // This file is used for bowl texture preview; kept intentionally simple.
     cube([40,40,2], center=true);
 } else if (render_mode == "dock_test") {
-    for (d = [8,10,12,15]) {
-        translate([d*2.0, 0, 0]) razor_dock();
-    }
+    for (d = [8,10,12,15]) translate([d*2.0, 0, 0]) razor_dock();
 } else if (render_mode == "blade_test") {
     blade_drawer();
     translate([30,0,0]) blade_storage();
@@ -268,23 +278,3 @@ if (render_mode == "assembly") {
 } else {
     assembly_preview();
 }
-
-// required public modules
-// bowl_profile();
-// bowl_shell();
-// interior_base();
-// macro_hills();
-// macro_valleys();
-// diamond_texture();
-// hybrid_texture();
-// texture_transition();
-// drainage_channels();
-// handle();
-// handle_junctions();
-// razor_dock();
-// razor_retention();
-// razor_head_support();
-// blade_storage();
-// blade_drawer();
-// blade_retainer();
-// assembly_preview();
