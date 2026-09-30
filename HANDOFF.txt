@@ -4,63 +4,54 @@ Updated: 2026-09-30
 PROJECT
 Repository: /home/pnb/repos/Shaving-Bowl
 GitHub: https://github.com/tumesh007/Shaving-Bowl
-Branch: main
+Branch: v3-update
 
-CURRENT WORK
-- Replaced the razor-dock pillar with a half-round head shelf, U-shaped neck
-  slot, curved-edge lip and drain gap.
-- Shelf parameters: radius 24 mm, plate thickness 3.5 mm, rim height/width
-  1.6 mm, dock gap 3 mm, flat edge offset 6 mm, neck slot radius 6.5 mm,
-  drain gap 5 mm.
-- Dock test fixtures are spaced 54 mm apart.
-- Added a two-line exterior emboss ("Tumesh's" / "Travel Shaving Bowl") on
-  the side opposite the handle.
-- Bundled fonts/Pacifico-Regular.ttf and fonts/OFL.txt (SIL Open Font License).
-  The SCAD source starts with: use <fonts/Pacifico-Regular.ttf>
-- Added emboss_test.stl and refreshed all preview renders, including
-  renders/14-head-rest-closeup.png and renders/15-name-emboss-closeup.png.
-- README.md and renders/render_previews.py were updated.
-- Bowl, texture, blade vault, drawer and handle geometry were otherwise left
-  unchanged.
+SUMMARY OF CHANGES
+1. Bowl enlargement:
+   - Increased bowl size by 10%: `bowl_outer_diameter = 88;`, `bowl_inner_diameter = 73.7;`, `complete_width_with_handle = 113;`.
+2. Dock elevation:
+   - Added parameter `dock_raise = 8;` in travel_shaving_bowl.scad.
+   - Applied `+ dock_raise` to `razor_dock()`, `razor_retention()`, `razor_support_mounts()`, `razor_head_support()`, and `parked_razor()`.
+   - Updated Blender render pipeline in renders/render_previews.py with `dock_raise = 8` and `center = Vector((46.0, 0, 34 + dock_raise))`.
+3. Embossed text emboldening:
+   - Added parameter `emboss_bold = 0.15;` in travel_shaving_bowl.scad.
+   - Wrapped text in `offset(r=emboss_bold)` after `resize([width, 0], auto=true)`.
+   - Kept wording ("Tumesh's" / "Travel Shaving Bowl") and `emboss_width2 = 48` without shortening text.
+4. Assets refreshed:
+   - All 7 production and test STLs exported with `preview_mode=false`.
+   - All 15 preview renders regenerated via Blender EEVEE.
 
-VALIDATION
-- OpenSCAD production bowl render: CGAL "Simple: yes".
-- Trimesh: travel_shaving_bowl.stl watertight, 1 connected component.
-- Dock test: 4 watertight, separate samples; adjacent X-bound gaps are
-  approximately 13.772, 13.399 and 12.838 mm.
-- Corrected razor fit measurements: head-to-lip 1.156 mm; neck-to-slot radial
-  clearance 1.1 mm; head-to-plate gap 0.2 mm. Head/plate mesh intersection is
-  empty.
-- Shelf has no mesh intersection with bowl shell or blade vault. Measured
-  nearest shelf-to-shell vertex/sample pair: shelf [60.2651, 6.5, 44.5208] to
-  shell [39.8478, 3.4862, 35], distance 22.729 mm. Shelf lowest sampled
-  vertex: [71.1753, 0, 21.1236].
-- Emboss bounds: X [-40.0137, -25.1422], Y [-24.2855, 23.7145],
-  Z [13.224, 31.4874] mm. It is on the -X side. Boolean checks found no
-  intersection with handle, dock or blade vault.
-- All seven STL outputs were watertight. Full vertex counts and bounds are in
-  the previous session handoff/chat if needed.
-- blade_drawer.stl and texture_test_coupon.stl remain byte-identical to their
-  pre-task versions.
+VALIDATION MEASUREMENTS
+1. Mesh Topology & Closure:
+   - travel_shaving_bowl.stl: Watertight=True, 1 connected component (len(mesh.split()) == 1: PASS).
+     Vertices: 27,095 | Faces: 54,198 | Bounds: [[-44.1124, -44.0, 0.0], [79.7264, 44.0, 58.464]].
+   - blade_drawer.stl: Watertight=True, 3 components.
+   - texture_test_coupon.stl: Watertight=True, 1 component.
+   - razor_dock_test.stl: Watertight=True, 4 components. Adjacent gaps: 13.772 mm, 13.399 mm, 12.838 mm (PASS).
+   - blade_storage_test.stl: Watertight=True, 21 components.
+   - handle_strength_test.stl: Watertight=True, 1 component.
+   - emboss_test.stl: Watertight=True, 1 component.
 
-KNOWN PRINTABILITY WARNING
-- Pacifico line 2 ("Travel Shaving Bowl") was measured with a 0.01 mm raster
-  medial-axis method. Minimum tapered-terminal stroke is about 0.02 mm and
-  median is about 0.622 mm, below the recommended 0.8 mm for a 0.4 mm nozzle.
-- Per instruction, parameters were not changed. Before printing, consider
-  raising emboss_width2 toward 50 mm or shortening line 2. The emboss_test
-  patch is provided for physical inspection.
+2. Line-2 Stroke Width Analysis ("Travel Shaving Bowl"):
+   - Measured with 0.01 mm raster medial axis + 0.40 mm radius disk opening:
+     - Total text area: 130.058 mm^2
+     - Min stroke: 0.0200 mm
+     - Median stroke: 0.9402 mm (improved from 0.622 mm in v2)
+     - Mean stroke: 0.9197 mm
+     - Area fraction with stroke >= 0.8 mm: 98.27% (Requirement >= 90%: PASS).
 
-REPORT-ONLY ORIGINAL CRADLE ISSUE
-- Placeholder shaft collision is from the existing handle shell, not the
-  handle-junction pads, razor-support mounts or retention bumps.
-- Maximum radial penetration into the radius-5.4 mm shaft is approximately
-  5.036 mm at axis position t≈3.0 mm from dock origin; collision extends to
-  roughly t=13.89 mm.
-- This geometry was intentionally not changed.
+3. Shaft Cylinder Collision Analysis (t=3..21 mm):
+   - Handle shell clearance: 0.0000 mm^3 collision for both cylinders (v2 handle-shell collision of up to 5.036 mm is 100% resolved).
+   - At dock_raise = 8:
+     - Radius 5.4 mm (cyl vol = 1648.9592 mm^3): 0.000000 mm^3 (0.0000%) - Requirement 0%: PASS.
+     - Radius 7.5 mm (cyl vol = 3180.8626 mm^3): 23.091290 mm^3 (0.7259%) - Requirement 0%: FAIL.
+       Overlap components: razor_retention bumps (15.33 mm^3), razor_support_mounts inner face (7.02 mm^3).
+   - At dock_raise = 10 (retry per specification):
+     - Radius 5.4 mm: 0.000000 mm^3 (0.0000%) - PASS.
+     - Radius 7.5 mm: 23.091290 mm^3 (0.7259%) - FAIL.
+       Overlap is identical because dock_raise translates the entire cradle assembly in Z; the retention bumps and cradle walls are internal features of the cradle itself.
 
-REPOSITORY STATE
-- Latest shelf-and-emboss edits were verified locally but were not committed
-  or pushed at handoff creation time.
-- Run `git status --short` before resuming. Temporary validation STL/SCAD files
-  and the temporary trimesh virtual environment were removed.
+RELEASE GATING OUTCOME
+- Per specification: "Tag v3 only if every check passes; otherwise push a branch, no tag, and stop. Never move or delete tag v2."
+- Outcome: Radius-7.5 mm shaft cylinder volume inside body is 0.7259% (> 0%).
+- Decision: Changes committed and pushed to branch `v3-update`. Tag `v3` was NOT created. Tag `v2` was not moved or deleted.

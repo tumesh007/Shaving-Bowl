@@ -9,8 +9,8 @@ overrides when exporting.
 
 | Parameter | Default | Purpose |
 | --- | ---: | --- |
-| `bowl_outer_diameter` | 80 | Rounded outside diameter |
-| `bowl_inner_diameter` | 67 | Inside diameter and texture boundary |
+| `bowl_outer_diameter` | 88 | Rounded outside diameter (enlarged 10% in v3-update) |
+| `bowl_inner_diameter` | 73.7 | Inside diameter and texture boundary (enlarged 10% in v3-update) |
 | `bowl_height` | 35 | Rim height from the stable base |
 | `base_thickness` | 3.5 | Minimum floor thickness at the center |
 
@@ -58,6 +58,20 @@ seeded terrain blends into the diamonds without forming isolated deep craters.
 | `razor_handle_max_diameter` | 15 | Largest target razor handle |
 | `razor_handle_clearance` | 1.0 | Cradle fit allowance |
 | `razor_dock_wall` | 3.0 | Cradle wall thickness |
+| `dock_raise` | 8 | Vertical dock elevation above rim reference level |
+
+## Razor head rest
+
+| Parameter | Default | Purpose |
+| --- | ---: | --- |
+| `head_rest_radius` | 24 | Half-round support plate radius |
+| `head_rest_thickness` | 3.5 | Plate thickness |
+| `head_rest_rim_height` | 1.6 | Lip height around perimeter |
+| `head_rest_rim_width` | 1.6 | Lip width around perimeter |
+| `head_rest_gap` | 3 | Gap between dock top and shelf bottom |
+| `neck_slot_radius` | 6.5 | U-shaped neck slot radius |
+| `head_rest_flat_edge` | 6 | Offset for straight edge flat cut |
+| `head_rest_drain_gap` | 5 | Through-drainage cutout width |
 
 ## Blade drawer
 
@@ -83,6 +97,23 @@ The vault and tray are centered across the handle's middle plane. The bowl,
 drawer, and razor cradle are distinct/dry and wet regions; there is no spring,
 magnet, or lid.
 
+## Embossed name
+
+| Parameter | Default | Purpose |
+| --- | ---: | --- |
+| `emboss_enabled` | `true` | Enable raised lettering on bowl wall |
+| `emboss_line1` | "Tumesh's" | Top text line |
+| `emboss_line2` | "Travel Shaving Bowl" | Bottom text line |
+| `emboss_bold` | 0.15 | 2D offset applied after resize to ensure stroke >= 0.8 mm |
+| `emboss_font` | "Pacifico" | Font family name (requires bundled TTF) |
+| `emboss_width1` | 34 | Target width for line 1 |
+| `emboss_width2` | 48 | Target width for line 2 |
+| `emboss_line_gap` | 10 | Vertical line spacing center-to-center |
+| `emboss_z` | 22 | Vertical center elevation of text block |
+| `emboss_height` | 0.8 | Outward emboss projection height |
+| `emboss_sink` | 0.4 | Inward penetration into bowl wall |
+| `emboss_max_half_width` | 25 | Maximum lateral half-width clamp |
+
 ## Output selectors
 
 Set `part` to one of:
@@ -95,6 +126,7 @@ Set `part` to one of:
 - `razor_dock_test`
 - `blade_storage_test`
 - `handle_strength_test`
+- `emboss_test` — exterior-wall patch for checking raised lettering
 
 Set `preview_mode=false` for finer STL exports. See the README for complete
 Flatpak OpenSCAD export commands.

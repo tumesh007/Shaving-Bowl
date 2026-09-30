@@ -9,13 +9,13 @@ use <fonts/Pacifico-Regular.ttf>
  */
 
 // ---------- Main dimensions (millimetres) ----------
-bowl_outer_diameter = 80;
-bowl_inner_diameter = 67;
+bowl_outer_diameter = 88;
+bowl_inner_diameter = 73.7;
 bowl_height = 35;
 wall_thickness = 3;
 base_thickness = 3.5;
 rim_width = 6;
-complete_width_with_handle = 105;
+complete_width_with_handle = 113;
 
 // ---------- Height-field surface ----------
 preview_mode = true;
@@ -50,6 +50,7 @@ razor_handle_min_diameter = 8;
 razor_handle_max_diameter = 15;
 razor_handle_clearance = 1.0;
 razor_dock_wall = 3.0;
+dock_raise = 8;
 
 // ---------- Razor head rest (half-round shelf) ----------
 head_rest_radius = 24;
@@ -66,6 +67,7 @@ head_rest_drain_gap = 5;
 emboss_enabled = true;
 emboss_line1 = "Tumesh's";
 emboss_line2 = "Travel Shaving Bowl";
+emboss_bold = 0.15;
 emboss_font = "Pacifico";
 emboss_width1 = 34;
 emboss_width2 = 48;
@@ -335,13 +337,13 @@ module dock_body(diameter=razor_handle_max_diameter) {
 }
 
 module razor_dock() {
-    translate([outer_radius + 2.0, 0, bowl_height - 1])
+    translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
         rotate([0, 90 - razor_dock_angle, 0])
             dock_body();
 }
 
 module razor_retention() {
-    translate([outer_radius + 2.0, 0, bowl_height - 1])
+    translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
         rotate([0, 90 - razor_dock_angle, 0])
             for (side = [-1, 1])
                 translate([-0.4, side * dock_inner_r(razor_handle_max_diameter) * 0.86, 8])
@@ -350,12 +352,12 @@ module razor_retention() {
 
 module razor_support_mounts() {
     for (side = [-1, 1])
-        translate([outer_radius + 2.0, side * (handle_width/2 - 1), bowl_height - 1])
+        translate([outer_radius + 2.0, side * (handle_width/2 - 1), bowl_height - 1 + dock_raise])
             rounded_box([12, 4, 8], 1.5, rounded_fn);
 }
 
 module razor_head_support() {
-    translate([outer_radius + 2.0, 0, bowl_height - 1])
+    translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
         rotate([0, 90 - razor_dock_angle, 0])
             translate([0, 0, dock_length() + head_rest_gap])
                 head_rest_shape();
@@ -529,8 +531,9 @@ module blade_stack(count, tray_y, tray_z) {
 // ---------- Embossed name ----------
 module emboss_line(txt, width) {
     linear_extrude(height=70)
-        resize([width, 0], auto=true)
-            text(txt, size=10, font=emboss_font, halign="center", valign="center", $fn=24);
+        offset(r=emboss_bold)
+            resize([width, 0], auto=true)
+                text(txt, size=10, font=emboss_font, halign="center", valign="center", $fn=24);
 }
 
 module name_emboss() {
@@ -674,7 +677,7 @@ module handle_strength_test() {
 }
 
 module parked_razor() {
-    translate([outer_radius + 2.0, 0, bowl_height - 1])
+    translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
         rotate([0, 90 - razor_dock_angle, 0]) {
             translate([0,0,3])
                 cylinder(h=dock_length() + head_rest_gap + 2, r=5.4, $fn=48);

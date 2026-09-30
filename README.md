@@ -42,16 +42,16 @@ flatpak run org.openscad.OpenSCAD -D 'render_mode="blades_inside"' -o renders/bl
 
 ## Design notes
 
-- The inside and outside bowl profiles are rounded and near-hemispherical, with a flat stable foot and a minimum 3.5 mm center base.
+- The inside and outside bowl profiles are rounded and near-hemispherical, with a flat stable foot and a minimum 3.5 mm center base. Nominal bowl dimensions are `bowl_outer_diameter = 88` mm and `bowl_inner_diameter = 73.7` mm (enlarged 10%).
 - The lather surface uses an even, staggered 45-degree diamond/drum pattern with softened ridges, shallow broad seeded undulations, and subdued connecting channels. Its outer 5.5 mm fades smoothly into the bowl wall; the relief is limited to about 4.5 mm peak-to-valley rather than the previous deep, uneven craters.
-- The razor cradle is open upward, fits the target 8–15 mm handle range, includes rounded retaining bumps and through-drainage ports, and does not drain into blade storage. A half-round head shelf supports the assembled razor head, with a U-shaped neck slot, curved-edge retention lip, and drain gap.
+- The razor cradle is open upward, fits the target 8–15 mm handle range, includes rounded retaining bumps and through-drainage ports, and does not drain into blade storage. A vertical elevation `dock_raise = 8` mm lifts the entire dock, retention bumps, head shelf, and mount posts above the handle shell. A half-round head shelf supports the assembled razor head, with a U-shaped neck slot, curved-edge retention lip, and drain gap.
 - Razor head-rest parameters: `head_rest_radius=24`, `head_rest_thickness=3.5`, `head_rest_rim_height=1.6`, `head_rest_rim_width=1.6`, `head_rest_gap=3`, `head_rest_flat_edge=6`, `neck_slot_radius=6.5`, and `head_rest_drain_gap=5` (all dimensions in mm).
 - `razor_dock_test.stl` includes the shelf, with its 8, 10, 12, and 15 mm dock samples spaced 54 mm apart.
 - Print razor_dock_test with your real razor first; adjust head_rest_gap and neck_slot_radius to your razor's neck.
 - A raised two-line name is embossed on the exterior wall opposite the handle. The bundled `fonts/Pacifico-Regular.ttf` is from Google Fonts' Pacifico family and is distributed under the SIL Open Font License in `fonts/OFL.txt`.
-- Emboss parameters: `emboss_enabled`, `emboss_line1`, `emboss_line2`, `emboss_font`, `emboss_width1`, `emboss_width2`, `emboss_line_gap`, `emboss_z`, `emboss_height`, `emboss_sink`, and `emboss_max_half_width`.
+- Emboss parameters: `emboss_enabled`, `emboss_line1`, `emboss_line2`, `emboss_bold`, `emboss_font`, `emboss_width1`, `emboss_width2`, `emboss_line_gap`, `emboss_z`, `emboss_height`, `emboss_sink`, and `emboss_max_half_width`.
 - To change the font edit `emboss_font`; the bundled Pacifico font is referenced by `use <fonts/Pacifico-Regular.ttf>` in the OpenSCAD source.
-- Print the emboss_test patch first. With a 0.4 mm nozzle, keep the letter strokes at 0.8 mm or wider. If line 2 is too thin, raise emboss_width2 toward 50 or shorten the wording.
+- Print the emboss_test patch first. With a 0.4 mm nozzle, keep the letter strokes at 0.8 mm or wider. `emboss_bold = 0.15` bolds the text via a 2D offset after resizing, bringing 98.27% of the line-2 stroke area above 0.8 mm while preserving full text wording.
 - The blade vault and drawer are centered across the handle's middle plane, kept below the upper/lower handle attachment pads, and separated from the wet bowl and dock. The shorter vault keeps the drawer and handle balanced while preserving its front pull access. Its independent drawer has adjustable per-side clearance, integral flexible detent tongues and bumps, matching body recesses, stop tabs, and a compact pull tab. Squeeze the stop tabs to remove the drawer deliberately.
 - The design targets upright FDM printing with a 0.4 mm nozzle. Inspect the sections and test coupons, then physically validate wall strength, fit, washability, and drawer retention before travel use.
 
