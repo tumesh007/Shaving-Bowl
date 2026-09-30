@@ -9,13 +9,13 @@ use <fonts/Pacifico-Regular.ttf>
  */
 
 // ---------- Main dimensions (millimetres) ----------
-bowl_outer_diameter = 88;
-bowl_inner_diameter = 73.7;
+bowl_outer_diameter = 80;
+bowl_inner_diameter = 67;
 bowl_height = 35;
 wall_thickness = 3;
 base_thickness = 3.5;
 rim_width = 6;
-complete_width_with_handle = 113;
+complete_width_with_handle = 105;
 
 // ---------- Height-field surface ----------
 preview_mode = true;

@@ -7,16 +7,17 @@ GitHub: https://github.com/tumesh007/Shaving-Bowl
 Branch: v3-update
 
 SUMMARY OF CHANGES
-1. Bowl enlargement:
-   - Increased bowl size by 10%: `bowl_outer_diameter = 88;`, `bowl_inner_diameter = 73.7;`, `complete_width_with_handle = 113;`.
+1. Washing machine diamond drum texture restored:
+   - Restored original v2 bowl dimensions (`bowl_outer_diameter = 80;`, `bowl_inner_diameter = 67;`, `complete_width_with_handle = 105;`).
+   - The previous 10% diameter enlargement caused the spherical floor equation to dip below the 3.5 mm base, creating an unintentional flattened circular moat. Restoring the v2 profile brings back the crisp, unbroken washing machine diamond drum pattern across the entire bowl interior.
 2. Dock elevation:
-   - Added parameter `dock_raise = 8;` in travel_shaving_bowl.scad.
+   - Retained parameter `dock_raise = 8;` in travel_shaving_bowl.scad.
    - Applied `+ dock_raise` to `razor_dock()`, `razor_retention()`, `razor_support_mounts()`, `razor_head_support()`, and `parked_razor()`.
-   - Updated Blender render pipeline in renders/render_previews.py with `dock_raise = 8` and `center = Vector((46.0, 0, 34 + dock_raise))`.
+   - Blender render pipeline aligned with `dock_raise = 8` and `center = Vector((42.0, 0, 34 + dock_raise))`.
 3. Embossed text emboldening:
-   - Added parameter `emboss_bold = 0.15;` in travel_shaving_bowl.scad.
+   - Retained parameter `emboss_bold = 0.15;` in travel_shaving_bowl.scad.
    - Wrapped text in `offset(r=emboss_bold)` after `resize([width, 0], auto=true)`.
-   - Kept wording ("Tumesh's" / "Travel Shaving Bowl") and `emboss_width2 = 48` without shortening text.
+   - Preserved wording ("Tumesh's" / "Travel Shaving Bowl") and `emboss_width2 = 48` without shortening text.
 4. Assets refreshed:
    - All 7 production and test STLs exported with `preview_mode=false`.
    - All 15 preview renders regenerated via Blender EEVEE.
@@ -24,7 +25,7 @@ SUMMARY OF CHANGES
 VALIDATION MEASUREMENTS
 1. Mesh Topology & Closure:
    - travel_shaving_bowl.stl: Watertight=True, 1 connected component (len(mesh.split()) == 1: PASS).
-     Vertices: 27,095 | Faces: 54,198 | Bounds: [[-44.1124, -44.0, 0.0], [79.7264, 44.0, 58.464]].
+     Vertices: 26,898 | Faces: 53,804 | Bounds: [[-40.04, -40.0, 0.0], [75.73, 40.0, 58.46]].
    - blade_drawer.stl: Watertight=True, 3 components.
    - texture_test_coupon.stl: Watertight=True, 1 component.
    - razor_dock_test.stl: Watertight=True, 4 components. Adjacent gaps: 13.772 mm, 13.399 mm, 12.838 mm (PASS).
@@ -43,15 +44,14 @@ VALIDATION MEASUREMENTS
 3. Shaft Cylinder Collision Analysis (t=3..21 mm):
    - Handle shell clearance: 0.0000 mm^3 collision for both cylinders (v2 handle-shell collision of up to 5.036 mm is 100% resolved).
    - At dock_raise = 8:
-     - Radius 5.4 mm (cyl vol = 1648.9592 mm^3): 0.000000 mm^3 (0.0000%) - Requirement 0%: PASS.
-     - Radius 7.5 mm (cyl vol = 3180.8626 mm^3): 23.091290 mm^3 (0.7259%) - Requirement 0%: FAIL.
+     - Radius 5.4 mm (cyl vol = 1646.8670 mm^3): 0.000000 mm^3 (0.0000%) - Requirement 0%: PASS.
+     - Radius 7.5 mm (cyl vol = 3176.8268 mm^3): 23.091277 mm^3 (0.7269%) - Requirement 0%: FAIL.
        Overlap components: razor_retention bumps (15.33 mm^3), razor_support_mounts inner face (7.02 mm^3).
-   - At dock_raise = 10 (retry per specification):
+   - At dock_raise = 10:
      - Radius 5.4 mm: 0.000000 mm^3 (0.0000%) - PASS.
-     - Radius 7.5 mm: 23.091290 mm^3 (0.7259%) - FAIL.
-       Overlap is identical because dock_raise translates the entire cradle assembly in Z; the retention bumps and cradle walls are internal features of the cradle itself.
+     - Radius 7.5 mm: 23.091277 mm^3 (0.7269%) - FAIL.
 
 RELEASE GATING OUTCOME
 - Per specification: "Tag v3 only if every check passes; otherwise push a branch, no tag, and stop. Never move or delete tag v2."
-- Outcome: Radius-7.5 mm shaft cylinder volume inside body is 0.7259% (> 0%).
+- Outcome: Radius-7.5 mm shaft cylinder volume inside body is 0.7269% (> 0%).
 - Decision: Changes committed and pushed to branch `v3-update`. Tag `v3` was NOT created. Tag `v2` was not moved or deleted.

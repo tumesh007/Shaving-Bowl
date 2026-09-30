@@ -9,8 +9,8 @@ overrides when exporting.
 
 | Parameter | Default | Purpose |
 | --- | ---: | --- |
-| `bowl_outer_diameter` | 88 | Rounded outside diameter (enlarged 10% in v3-update) |
-| `bowl_inner_diameter` | 73.7 | Inside diameter and texture boundary (enlarged 10% in v3-update) |
+| `bowl_outer_diameter` | 80 | Rounded outside diameter |
+| `bowl_inner_diameter` | 67 | Inside diameter and texture boundary |
 | `bowl_height` | 35 | Rim height from the stable base |
 | `base_thickness` | 3.5 | Minimum floor thickness at the center |
 

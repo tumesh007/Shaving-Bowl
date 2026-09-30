@@ -54,7 +54,7 @@ def add_body(with_drawer=True, open_drawer=False, blades=False):
     if blades:
         for index in range(5):
             bpy.ops.mesh.primitive_cube_add(size=1, location=(
-                57.5, 0.0, 4.825 + index * 0.37))
+                53.5, 0.0, 4.825 + index * 0.37))
             blade = bpy.context.object
             blade.name = "Illustrative DE blade"
             blade.dimensions = (21.6, 42.6, 0.25)
@@ -145,7 +145,7 @@ def standard_scene(name, target=(14, -1, 26), direction=(1, -1, 0.9), scale=135,
     if parked_razor:
         dock_raise = 8
         axis = Vector((math.sin(math.radians(65)), 0, math.cos(math.radians(65))))
-        center = Vector((46.0, 0, 34 + dock_raise))
+        center = Vector((42.0, 0, 34 + dock_raise))
         bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=5.4, depth=18,
                                             location=center + axis * 12)
         shaft = bpy.context.object
@@ -179,9 +179,9 @@ standard_scene("04-bottom.png", target=(14, -1, 20), direction=(0, 0, -1), scale
 standard_scene("05-lather-surface-closeup.png", target=(0, 0, 13), direction=(0.2, -0.4, 1), scale=73,
                )
 section_scene("06-texture-section.png", 1, 0, (0, 1, 0), (0, 0, 18), 115)
-section_scene("07-handle-section.png", 1, 0, (0, 1, 0), (49, 0, 19), 76)
-section_scene("08-centered-blade-compartment.png", 0, 57.5, (1, 0, 0), (57.5, 0, 7), 70, blades=True)
-section_scene("09-blade-drawer-section.png", 0, 57.5, (1, 0, 0), (57.5, 0, 7), 70, blades=True)
+section_scene("07-handle-section.png", 1, 0, (0, 1, 0), (45, 0, 19), 76)
+section_scene("08-centered-blade-compartment.png", 0, 53.5, (1, 0, 0), (53.5, 0, 7), 70, blades=True)
+section_scene("09-blade-drawer-section.png", 0, 53.5, (1, 0, 0), (53.5, 0, 7), 70, blades=True)
 standard_scene("10-razor-in-dock.png", parked_razor=True)
 standard_scene("11-drawer-installed.png")
 standard_scene("12-drawer-partially-open.png", open_drawer=True)
@@ -189,8 +189,8 @@ standard_scene("13-blades-inside-drawer.png", blades=True)
 
 clear_scene()
 import_mesh(BODY, "Bowl and half-round head shelf", BODY_MAT)
-render("14-head-rest-closeup.png", target=(55, 0, 44), direction=(0.55, -1, 0.75), scale=48)
+render("14-head-rest-closeup.png", target=(51, 0, 44), direction=(0.55, -1, 0.75), scale=48)
 
 clear_scene()
 import_mesh(BODY, "Embossed name on bowl exterior", BODY_MAT)
-render("15-name-emboss-closeup.png", target=(-44, 0, 22), direction=(-1, 0, 0), scale=62)
+render("15-name-emboss-closeup.png", target=(-40, 0, 22), direction=(-1, 0, 0), scale=62)
