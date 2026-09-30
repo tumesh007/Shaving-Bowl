@@ -145,17 +145,17 @@ def standard_scene(name, target=(14, -1, 26), direction=(1, -1, 0.9), scale=135,
     if parked_razor:
         axis = Vector((math.sin(math.radians(65)), 0, math.cos(math.radians(65))))
         center = Vector((42, 0, 34))
-        bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=4.8, depth=26,
-                                            location=center + axis * 10)
+        bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=5.4, depth=18,
+                                            location=center + axis * 12)
         shaft = bpy.context.object
         shaft.name = "Illustrative assembled razor handle"
         shaft.rotation_euler = axis.to_track_quat("Z", "Y").to_euler()
         shaft.data.materials.append(RAZOR_MAT)
-        head_pos = center + axis * 23
+        head_pos = center + axis * 28.2
         bpy.ops.mesh.primitive_cube_add(size=1, location=head_pos)
         head = bpy.context.object
         head.name = "Generic razor head"
-        head.dimensions = (22, 6, 12)
+        head.dimensions = (9, 42, 7)
         head.rotation_euler = axis.to_track_quat("Z", "Y").to_euler()
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
         head.data.materials.append(RAZOR_MAT)
@@ -185,3 +185,11 @@ standard_scene("10-razor-in-dock.png", parked_razor=True)
 standard_scene("11-drawer-installed.png")
 standard_scene("12-drawer-partially-open.png", open_drawer=True)
 standard_scene("13-blades-inside-drawer.png", blades=True)
+
+clear_scene()
+import_mesh(BODY, "Bowl and half-round head shelf", BODY_MAT)
+render("14-head-rest-closeup.png", target=(51, 0, 36), direction=(0.55, -1, 0.75), scale=48)
+
+clear_scene()
+import_mesh(BODY, "Embossed name on bowl exterior", BODY_MAT)
+render("15-name-emboss-closeup.png", target=(-40, 0, 22), direction=(-1, 0, 0), scale=62)

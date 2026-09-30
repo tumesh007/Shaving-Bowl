@@ -1,3 +1,5 @@
+use <fonts/Pacifico-Regular.ttf>
+
 /*
  * Compact travel shaving bowl
  * Parametric, open bowl with a blended height-field lather surface, ergonomic
@@ -49,6 +51,30 @@ razor_handle_max_diameter = 15;
 razor_handle_clearance = 1.0;
 razor_dock_wall = 3.0;
 
+// ---------- Razor head rest (half-round shelf) ----------
+head_rest_radius = 24;
+head_rest_thickness = 3.5;
+head_rest_rim_height = 1.6;
+head_rest_rim_width = 1.6;
+head_rest_gap = 3;
+neck_slot_radius = 6.5;
+head_rest_flat_edge = 6;
+head_rest_drain_gap = 5;
+
+// ---------- Embossed name (raised text on the outer wall, side opposite the handle) ----------
+// To change the font, edit emboss_font (any installed font name, e.g. "Liberation Sans:style=Bold").
+emboss_enabled = true;
+emboss_line1 = "Tumesh's";
+emboss_line2 = "Travel Shaving Bowl";
+emboss_font = "Pacifico";
+emboss_width1 = 34;
+emboss_width2 = 48;
+emboss_line_gap = 10;
+emboss_z = 22;
+emboss_height = 0.8;
+emboss_sink = 0.4;
+emboss_max_half_width = 25;
+
 // ---------- Captive DE blade drawer ----------
 de_blade_length = 43;
 de_blade_width = 22;
@@ -69,10 +95,10 @@ drawer_endstop_overlap = 1.0;
 // ---------- Output selection ----------
 // assembly, texture_test_coupon, razor_dock_test, blade_storage_test,
 // handle_strength_test, top, side, bottom, texture_closeup, texture_section,
-// handle_section, blade_section, razor_parked, blades_inside
+// handle_section, blade_section, razor_parked, blades_inside, emboss_test
 render_mode = "assembly";
 // assembly, bowl, bowl_shell, blade_drawer, texture_test, razor_dock_test,
-// blade_storage_test, handle_strength_test
+// blade_storage_test, handle_strength_test, emboss_test
 part = "assembly";
 drawer_open = false;
 
@@ -331,8 +357,35 @@ module razor_support_mounts() {
 module razor_head_support() {
     translate([outer_radius + 2.0, 0, bowl_height - 1])
         rotate([0, 90 - razor_dock_angle, 0])
-            translate([0, 0, dock_length() + 5])
-                rounded_box([19, 4, 3], 1.2, rounded_fn);
+            translate([0, 0, dock_length() + head_rest_gap])
+                head_rest_shape();
+}
+
+module head_rest_shape() {
+    difference() {
+        union() {
+            intersection() {
+                cylinder(h=head_rest_thickness, r=head_rest_radius, $fn=rounded_fn*3);
+                translate([-head_rest_flat_edge, -head_rest_radius, -1])
+                    cube([head_rest_radius + head_rest_flat_edge, 2*head_rest_radius, head_rest_thickness + 2]);
+            }
+            intersection() {
+                difference() {
+                    translate([0, 0, head_rest_thickness - 0.01])
+                        cylinder(h=head_rest_rim_height, r=head_rest_radius, $fn=rounded_fn*3);
+                    translate([0, 0, head_rest_thickness - 1])
+                        cylinder(h=head_rest_rim_height + 2, r=head_rest_radius - head_rest_rim_width, $fn=rounded_fn*3);
+                    translate([head_rest_radius - 4, 0, head_rest_thickness + 0.5])
+                        cube([8, head_rest_drain_gap, 6], center=true);
+                }
+                translate([-head_rest_flat_edge, -head_rest_radius - 1, 0])
+                    cube([head_rest_radius + head_rest_flat_edge + 1, 2*head_rest_radius + 2, head_rest_thickness + head_rest_rim_height + 1]);
+            }
+        }
+        translate([0, 0, -1]) cylinder(h=head_rest_thickness + 4, r=neck_slot_radius, $fn=rounded_fn*2);
+        translate([-neck_slot_radius - 6, -neck_slot_radius, -1])
+            cube([neck_slot_radius + 6, 2*neck_slot_radius, head_rest_thickness + 4]);
+    }
 }
 
 module razor_dock_assembly() {
@@ -473,6 +526,38 @@ module blade_stack(count, tray_y, tray_z) {
             cube([de_blade_width - 0.4, de_blade_length - 0.4, de_blade_thickness], center=true);
 }
 
+// ---------- Embossed name ----------
+module emboss_line(txt, width) {
+    linear_extrude(height=70)
+        resize([width, 0], auto=true)
+            text(txt, size=10, font=emboss_font, halign="center", valign="center", $fn=24);
+}
+
+module name_emboss() {
+    if (emboss_enabled)
+        intersection() {
+            translate([0, 0, emboss_z])
+                rotate([90, 0, -90])
+                    union() {
+                        translate([0, emboss_line_gap/2, 0]) emboss_line(emboss_line1, emboss_width1);
+                        translate([0, -emboss_line_gap/2, 0]) emboss_line(emboss_line2, emboss_width2);
+                    }
+            difference() {
+                translate([0, 0, bowl_height]) sphere(r=outer_radius + emboss_height, $fn=rounded_fn*6);
+                translate([0, 0, bowl_height]) sphere(r=outer_radius - emboss_sink, $fn=rounded_fn*6);
+            }
+            translate([-outer_radius - 5, -outer_radius, 0])
+                cube([outer_radius + 5, 2*outer_radius, bowl_height + 5]);
+        }
+}
+
+module emboss_test() {
+    intersection() {
+        bowl_body();
+        translate([-outer_radius - 2, -30, emboss_z - 12]) cube([14, 60, 24]);
+    }
+}
+
 module bowl_body() {
     difference() {
         union() {
@@ -481,6 +566,7 @@ module bowl_body() {
             handle();
             blade_storage_shell();
             razor_dock_assembly();
+            name_emboss();
         }
         blade_vault_void();
     }
@@ -560,15 +646,15 @@ module dock_sample(diameter, x_offset) {
                 for (side = [-1, 1])
                     translate([-0.4, side*dock_inner_r(diameter)*0.86, 8])
                         sphere(r=1.5, $fn=rounded_fn);
-                translate([0,0,dock_length()+5])
-                    rounded_box([19,4,3],1.2,rounded_fn);
+                translate([0,0,dock_length()+head_rest_gap])
+                    head_rest_shape();
             }
 }
 
 module razor_dock_test() {
     diameters = [8,10,12,15];
     for (i = [0:3])
-        dock_sample(diameters[i], i*34);
+                dock_sample(diameters[i], i*54);
 }
 
 module blade_storage_test() {
@@ -591,9 +677,9 @@ module parked_razor() {
     translate([outer_radius + 2.0, 0, bowl_height - 1])
         rotate([0, 90 - razor_dock_angle, 0]) {
             translate([0,0,3])
-                cylinder(h=18, r=5.4, $fn=48);
-            translate([0,0,22])
-                rounded_box([24, 5, 13], 1.4, 24);
+                cylinder(h=dock_length() + head_rest_gap + 2, r=5.4, $fn=48);
+            translate([0,0,dock_length() + head_rest_gap + head_rest_thickness + 0.2 + 3.5])
+                rounded_box([9, 42, 7], 1.4, 24);
         }
 }
 
@@ -653,6 +739,8 @@ module selected_part() {
         blade_storage_test();
     else if (part == "handle_strength_test")
         handle_strength_test();
+    else if (part == "emboss_test")
+        emboss_test();
     else
         scene();
 }

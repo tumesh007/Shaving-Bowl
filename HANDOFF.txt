@@ -1,0 +1,66 @@
+TRAVEL SHAVING BOWL — HANDOFF
+Updated: 2026-09-30
+
+PROJECT
+Repository: /home/pnb/repos/Shaving-Bowl
+GitHub: https://github.com/tumesh007/Shaving-Bowl
+Branch: main
+
+CURRENT WORK
+- Replaced the razor-dock pillar with a half-round head shelf, U-shaped neck
+  slot, curved-edge lip and drain gap.
+- Shelf parameters: radius 24 mm, plate thickness 3.5 mm, rim height/width
+  1.6 mm, dock gap 3 mm, flat edge offset 6 mm, neck slot radius 6.5 mm,
+  drain gap 5 mm.
+- Dock test fixtures are spaced 54 mm apart.
+- Added a two-line exterior emboss ("Tumesh's" / "Travel Shaving Bowl") on
+  the side opposite the handle.
+- Bundled fonts/Pacifico-Regular.ttf and fonts/OFL.txt (SIL Open Font License).
+  The SCAD source starts with: use <fonts/Pacifico-Regular.ttf>
+- Added emboss_test.stl and refreshed all preview renders, including
+  renders/14-head-rest-closeup.png and renders/15-name-emboss-closeup.png.
+- README.md and renders/render_previews.py were updated.
+- Bowl, texture, blade vault, drawer and handle geometry were otherwise left
+  unchanged.
+
+VALIDATION
+- OpenSCAD production bowl render: CGAL "Simple: yes".
+- Trimesh: travel_shaving_bowl.stl watertight, 1 connected component.
+- Dock test: 4 watertight, separate samples; adjacent X-bound gaps are
+  approximately 13.772, 13.399 and 12.838 mm.
+- Corrected razor fit measurements: head-to-lip 1.156 mm; neck-to-slot radial
+  clearance 1.1 mm; head-to-plate gap 0.2 mm. Head/plate mesh intersection is
+  empty.
+- Shelf has no mesh intersection with bowl shell or blade vault. Measured
+  nearest shelf-to-shell vertex/sample pair: shelf [60.2651, 6.5, 44.5208] to
+  shell [39.8478, 3.4862, 35], distance 22.729 mm. Shelf lowest sampled
+  vertex: [71.1753, 0, 21.1236].
+- Emboss bounds: X [-40.0137, -25.1422], Y [-24.2855, 23.7145],
+  Z [13.224, 31.4874] mm. It is on the -X side. Boolean checks found no
+  intersection with handle, dock or blade vault.
+- All seven STL outputs were watertight. Full vertex counts and bounds are in
+  the previous session handoff/chat if needed.
+- blade_drawer.stl and texture_test_coupon.stl remain byte-identical to their
+  pre-task versions.
+
+KNOWN PRINTABILITY WARNING
+- Pacifico line 2 ("Travel Shaving Bowl") was measured with a 0.01 mm raster
+  medial-axis method. Minimum tapered-terminal stroke is about 0.02 mm and
+  median is about 0.622 mm, below the recommended 0.8 mm for a 0.4 mm nozzle.
+- Per instruction, parameters were not changed. Before printing, consider
+  raising emboss_width2 toward 50 mm or shortening line 2. The emboss_test
+  patch is provided for physical inspection.
+
+REPORT-ONLY ORIGINAL CRADLE ISSUE
+- Placeholder shaft collision is from the existing handle shell, not the
+  handle-junction pads, razor-support mounts or retention bumps.
+- Maximum radial penetration into the radius-5.4 mm shaft is approximately
+  5.036 mm at axis position t≈3.0 mm from dock origin; collision extends to
+  roughly t=13.89 mm.
+- This geometry was intentionally not changed.
+
+REPOSITORY STATE
+- Latest shelf-and-emboss edits were verified locally but were not committed
+  or pushed at handoff creation time.
+- Run `git status --short` before resuming. Temporary validation STL/SCAD files
+  and the temporary trimesh virtual environment were removed.
