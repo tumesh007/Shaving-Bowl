@@ -1,130 +1,100 @@
 # Parameter Reference
 
-This file documents the main adjustable dimensions and personalization controls for the travel shaving bowl.
+The canonical model and all selectable test parts are in
+[`travel_shaving_bowl.scad`](travel_shaving_bowl.scad). Dimensions are in
+millimetres. Edit the values near the top of that file or pass OpenSCAD `-D`
+overrides when exporting.
 
-## Handoff defaults
+## Bowl
 
-The production source is `travel_shaving_bowl.scad` on the `main` branch.
+| Parameter | Default | Purpose |
+| --- | ---: | --- |
+| `bowl_outer_diameter` | 80 | Rounded outside diameter |
+| `bowl_inner_diameter` | 67 | Inside diameter and texture boundary |
+| `bowl_height` | 35 | Rim height from the stable base |
+| `base_thickness` | 3.5 | Minimum floor thickness at the center |
 
-- `include_lid = false` — fixed requirement; do not change to add a lid.
-- `render_mode = "assembly"` — default complete preview.
-- `seed = 42` — deterministic terrain seed.
+The inside and outside curves are generated as near-hemispherical profiles
+with a flat foot. The textured floor follows the spherical interior instead
+of placing a flat plate at the bottom. `wall_thickness`, `rim_width`, and
+`complete_width_with_handle` remain as design-reference values in the source;
+the current profile is controlled by the inside/outside diameters and does
+not use those three parameters as direct geometry inputs.
 
-## Bowl dimensions
+## Lather texture
 
-- `bowl_outer_diameter = 80` mm
-- `bowl_inner_diameter = 67` mm
-- `bowl_height = 35` mm
-- `wall_thickness = 3` mm
-- `base_thickness = 3.5` mm
-- `rim_width = 6` mm
-- `interior_depth = 22` mm
+| Parameter | Default | Purpose |
+| --- | ---: | --- |
+| `preview_mode` | `true` | Faster, coarser interactive model |
+| `preview_texture_resolution` | 1.6 | Preview height-field grid spacing |
+| `export_texture_resolution` | 0.8 | STL height-field grid spacing |
+| `texture_seed` | 4217 | Repeatable deterministic feature layout |
+| `diamond_length` | 8 | Rhombus pitch along the long axis |
+| `diamond_width` | 5 | Rhombus pitch along the short axis |
+| `diamond_spacing` | 2 | Gap between repeated rhombi |
+| `diamond_ridge_height` | 1.15 | Raised drum-feature amplitude |
+| `diamond_channel_depth` | 0.65 | Recessed channel amplitude |
+| `diamond_height_variation` | 0.04 | Small seeded feature variation |
+| `hill_max_height` | 1.3 | Positive height-field clamp |
+| `valley_min_height` | -3.2 | Negative height-field clamp |
+| `macro_hill_scale` | 0.35 | Broad-hill contribution |
+| `macro_valley_scale` | 0.45 | Broad-valley contribution |
+| `major_groove_scale` | 0.4 | Sparse broad-groove contribution |
+| `outer_smooth_width` | 5.5 | Texture fade into the wall |
 
-Keep the outer diameter approximately 75–85 mm and height approximately 30–40 mm for the intended travel form factor.
+The softened staggered rhombus field is the primary texture. Low-amplitude
+seeded terrain blends into the diamonds without forming isolated deep craters.
 
-## Hybrid lather texture
+## Handle and razor dock
 
-- `diamond_length = 8` mm
-- `diamond_width = 5` mm
-- `diamond_spacing = 2` mm
-- `diamond_ridge_height = 1.0` mm
-- `diamond_channel_depth = 1.2` mm
-- `hill_height = 1.8` mm
-- `valley_height = -2.5` mm
-- `deep_valley_height = -4.5` mm
-- `feature_radius = 6.0` mm
-- `seed = 42`
-- `edge_attenuation = 5.0` mm
+| Parameter | Default | Purpose |
+| --- | ---: | --- |
+| `handle_width` | 20 | Grip width |
+| `handle_height` | 40 | Grip height |
+| `handle_projection` | 22 | Handle projection from the bowl |
+| `handle_fillet` | 4 | Rounded grip edge radius |
+| `razor_dock_angle` | 25 | Dock inclination in degrees |
+| `razor_handle_min_diameter` | 8 | Smallest target razor handle |
+| `razor_handle_max_diameter` | 15 | Largest target razor handle |
+| `razor_handle_clearance` | 1.0 | Cradle fit allowance |
+| `razor_dock_wall` | 3.0 | Cradle wall thickness |
 
-Changing `seed` changes deterministic feature placement while keeping the same seed and dimensions reproducible.
+## Blade drawer
 
-## Handle
+| Parameter | Default | Purpose |
+| --- | ---: | --- |
+| `de_blade_length` | 43 | Standard DE blade length |
+| `de_blade_width` | 22 | Standard DE blade width |
+| `de_blade_thickness` | 0.25 | Single-blade thickness |
+| `blade_clearance` | 0.5 | Blade fit allowance |
+| `blade_storage_count` | 5 | Preview stack capacity |
+| `drawer_wall` | 1.2 | Drawer wall thickness |
+| `drawer_clearance` | 0.3 | Sliding clearance per mating side |
+| `drawer_open_travel` | 11.9 | Maximum captive travel |
+| `drawer_pull_width` | 12 | Pull-tab width |
+| `drawer_pull_height` | 5 | Pull-tab height |
+| `drawer_pull_projection` | 4 | Pull-tab projection |
+| `detent_bump_radius` | 0.65 | Passive detent bump size |
+| `detent_flexure_length` | 8 | Integral detent flexure length |
+| `detent_flexure_thickness` | 0.9 | Integral detent flexure thickness |
+| `drawer_endstop_overlap` | 1.0 | Captive stop-tab overlap |
 
-- `handle_width = 20` mm
-- `handle_height = 40` mm
-- `handle_projection = 22` mm
-- `handle_fillet = 4` mm
-- `handle_joint_radius = 4` mm
+The vault and tray are centered across the handle's middle plane. The bowl,
+drawer, and razor cradle are distinct/dry and wet regions; there is no spring,
+magnet, or lid.
 
-## Razor dock
+## Output selectors
 
-- `razor_dock_angle = 25` degrees
-- `razor_handle_min_diameter = 8` mm
-- `razor_handle_max_diameter = 15` mm
-- `razor_handle_clearance = 1.0` mm
-- `razor_dock_depth = 4` mm
+Set `part` to one of:
 
-## Blade storage
+- `assembly` — preview body and separate drawer together
+- `bowl` — production body
+- `bowl_shell` — bowl-only geometry diagnostic
+- `blade_drawer` — separate printable tray
+- `texture_test`
+- `razor_dock_test`
+- `blade_storage_test`
+- `handle_strength_test`
 
-- `de_blade_length = 43` mm
-- `de_blade_width = 22` mm
-- `de_blade_thickness = 0.25` mm
-- `blade_storage_count = 5`
-- `blade_clearance = 0.4` mm per mating side
-
-Recommended drawer clearance range:
-- `0.3` mm — tighter fit
-- `0.4` mm — default
-- `0.5` mm — looser/easier slide
-
-## Personalization controls
-
-The current default marking is **Tumesh** in **Pacifico**:
-
-```scad
-name_text = "Tumesh";
-name_font = "Pacifico";
-name_size = 8;
-name_depth = 0.8;
-name_z = 17;
-name_spacing = 1.0;
-```
-
-### Change the name
-
-Edit `name_text` and keep the value in quotes:
-
-```scad
-name_text = "Your Name";
-```
-
-### Change the font
-
-Edit `name_font` using an installed system font family and optional style:
-
-```scad
-name_font = "DejaVu Sans:style=Bold";
-```
-
-Pacifico must be installed on the computer running OpenSCAD. The font file is not stored in this repository. To list Linux font family/style names:
-
-```bash
-fc-list : family style
-```
-
-On Windows and macOS, use the exact family name shown by the system font viewer. Restart OpenSCAD after installing a font if it does not appear.
-
-### Change the marking appearance
-
-- `name_size` controls text height in millimetres.
-- `name_depth` controls emboss thickness in millimetres.
-- `name_z` moves the marking vertically on the exterior.
-- `name_spacing` adjusts spacing between characters.
-
-The `name_marking()` module places the text on the front exterior wall, and `assembly_preview()` includes it in the default view.
-
-## Command-line personalization
-
-OpenSCAD can override values without editing the file:
-
-```bash
-openscad -D 'name_text="Alex"' -D 'name_font="DejaVu Sans:style=Bold"' -D 'name_size=8' -o personalized_bowl.stl travel_shaving_bowl.scad
-```
-
-For repeatable project handoff, editing the named parameters in the SCAD source is preferred.
-
-## Safety / no-lid requirement
-
-- `include_lid = false`
-
-There is no lid module or lid geometry in this project. Do not add lid geometry when customizing the model.
+Set `preview_mode=false` for finer STL exports. See the README for complete
+Flatpak OpenSCAD export commands.

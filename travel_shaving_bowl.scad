@@ -1,280 +1,666 @@
 /*
- * travel_shaving_bowl.scad
- * Compact travel shaving bowl with side handle, razor dock, and blade drawer.
- * No lid geometry is included.
+ * Compact travel shaving bowl
+ * Parametric, open bowl with a blended height-field lather surface, ergonomic
+ * side grip, angled razor cradle, and an enclosed captive blade drawer.
+ *
+ * No lid or bowl-cover geometry is present.
  */
 
-include_lid = false;
-render_mode = "assembly";
-
-// Main bowl dimensions
+// ---------- Main dimensions (millimetres) ----------
 bowl_outer_diameter = 80;
 bowl_inner_diameter = 67;
 bowl_height = 35;
 wall_thickness = 3;
 base_thickness = 3.5;
 rim_width = 6;
-interior_depth = 22;
+complete_width_with_handle = 105;
 
-// Hybrid terrain
+// ---------- Height-field surface ----------
+preview_mode = true;
+preview_texture_resolution = 1.6;
+export_texture_resolution = 0.8;
+texture_seed = 4217;
+texture_resolution = preview_mode ? preview_texture_resolution : export_texture_resolution;
 diamond_length = 8;
 diamond_width = 5;
 diamond_spacing = 2;
-diamond_ridge_height = 1.0;
-diamond_channel_depth = 1.2;
-hill_height = 1.8;
-valley_height = -2.5;
-deep_valley_height = -4.5;
-feature_radius = 6.0;
-seed = 42;
-edge_attenuation = 5.0;
+diamond_ridge_height = 1.15;
+diamond_channel_depth = 0.65;
+diamond_height_variation = 0.04;
+hill_max_height = 1.3;
+valley_min_height = -3.2;
+macro_hill_scale = 0.35;
+macro_valley_scale = 0.45;
+major_groove_scale = 0.4;
+outer_smooth_width = 5.5;
+feature_spread = 22;
 
-// Handle
+// ---------- Grip ----------
 handle_width = 20;
 handle_height = 40;
 handle_projection = 22;
 handle_fillet = 4;
-handle_joint_radius = 4;
+handle_fillet_radius = handle_fillet;
 
-// Razor dock
+// ---------- Razor cradle ----------
 razor_dock_angle = 25;
 razor_handle_min_diameter = 8;
 razor_handle_max_diameter = 15;
 razor_handle_clearance = 1.0;
-razor_dock_depth = 4;
+razor_dock_wall = 3.0;
 
-// Blade drawer
-blade_storage_count = 5;
+// ---------- Captive DE blade drawer ----------
 de_blade_length = 43;
 de_blade_width = 22;
 de_blade_thickness = 0.25;
-blade_clearance = 0.4;
+blade_clearance = 0.5;
+blade_storage_count = 5;
+drawer_wall = 1.2;
+drawer_clearance = 0.3;
+drawer_open_travel = 11.9;
+drawer_pull_width = 12;
+drawer_pull_height = 5;
+drawer_pull_projection = 4;
+detent_bump_radius = 0.65;
+detent_flexure_length = 8;
+detent_flexure_thickness = 0.9;
+drawer_endstop_overlap = 1.0;
 
-// Personalization
-name_text = "Tumesh";
-name_font = "Pacifico"; // Install the Pacifico font locally before rendering.
-name_size = 8;
-name_depth = 0.8;
-name_z = 17;
-name_spacing = 1.0;
+// ---------- Output selection ----------
+// assembly, texture_test_coupon, razor_dock_test, blade_storage_test,
+// handle_strength_test, top, side, bottom, texture_closeup, texture_section,
+// handle_section, blade_section, razor_parked, blades_inside
+render_mode = "assembly";
+// assembly, bowl, bowl_shell, blade_drawer, texture_test, razor_dock_test,
+// blade_storage_test, handle_strength_test
+part = "assembly";
+drawer_open = false;
 
-function rand01(v) = fract(sin(v * 127.1 + 311.7) * 43758.5453123);
-function rand_signed(v) = rand01(v) * 2 - 1;
+// ---------- Derived dimensions ----------
+outer_radius = bowl_outer_diameter / 2;
+inner_radius = bowl_inner_diameter / 2;
+texture_radius = inner_radius;
+texture_fade_start = texture_radius - outer_smooth_width;
+terrain_preview_fn = preview_mode ? 72 : 144;
+rounded_fn = preview_mode ? 18 : 28;
+
 function fract(v) = v - floor(v);
+function clamp(v, low, high) = min(max(v, low), high);
+function smoothstep(edge0, edge1, value) =
+    let(t = clamp((value - edge0) / (edge1 - edge0), 0, 1))
+    t * t * (3 - 2 * t);
+function rand01(k) =
+    fract(sin((k + texture_seed * 17.0) * 127.1 + 311.7) * 43758.5453123);
+function feature_coord(i, salt) = (rand01(i * 13.7 + salt) * 2 - 1) * feature_spread;
+function make_feature(i, salt, rmin, rmax, amin, amax) = [
+    feature_coord(i, salt),
+    feature_coord(i, salt + 101),
+    rmin + rand01(i * 7.3 + salt + 207) * (rmax - rmin),
+    amin + rand01(i * 11.9 + salt + 419) * (amax - amin)
+];
+function feature_sum(features, x, y, i=0) =
+    i >= len(features) ? 0 :
+    let(f = features[i],
+        dx = x - f[0],
+        dy = y - f[1],
+        sigma = f[2])
+    f[3] * exp(-(dx * dx + dy * dy) / (2 * sigma * sigma))
+    + feature_sum(features, x, y, i + 1);
 
-module rounded_box(size=[10,10,10], r=2, $fn=32) {
+// Broad, low-amplitude seeded features soften the regular drum pattern.
+macro_hill_features = [for (i = [0:7]) make_feature(i, 37, 7.0, 10.0, 0.18, 0.32)];
+macro_valley_features = [for (i = [0:5]) make_feature(i, 211, 7.0, 10.0, -0.48, -0.28)];
+deep_valley_features = [for (i = [0:1]) make_feature(i, 503, 7.5, 9.5, -1.15, -0.95)];
+local_hill_features = [for (i = [0:4]) make_feature(i, 809, 4.0, 6.0, 0.08, 0.15)];
+local_valley_features = [for (i = [0:4]) make_feature(i, 1103, 4.0, 6.0, -0.18, -0.10)];
+
+function macro_hills(x, y) = macro_hill_scale * feature_sum(macro_hill_features, x, y);
+function macro_valleys(x, y) =
+    macro_valley_scale * feature_sum(macro_valley_features, x, y)
+    + major_groove_scale * feature_sum(deep_valley_features, x, y);
+function macro_terrain(x, y) =
+    0.045 * sin(x * 5.0 + texture_seed)
+    + 0.04 * cos(y * 5.4 - texture_seed * 0.7)
+    + 0.03 * sin((x + y) * 3.6);
+
+function local_hills(x, y) = feature_sum(local_hill_features, x, y);
+function local_valleys(x, y) = feature_sum(local_valley_features, x, y);
+
+// A rotated, staggered rhombus field with smooth seeded size/height variation.
+function diamond_texture(x, y) =
+    let(u = (x + y) * 0.70710678,
+        v = (x - y) * 0.70710678,
+        pitch_u = diamond_length + diamond_spacing,
+        pitch_v = diamond_width + diamond_spacing,
+        row = floor(v / pitch_v + 0.5),
+        v_local = (v - row * pitch_v) / (pitch_v / 2),
+        u_staggered = u - 0.12 * pitch_u * cos(180 * v / pitch_v),
+        u_local = (u_staggered
+                   - pitch_u * floor(u_staggered / pitch_u + 0.5)) / (pitch_u / 2),
+        diamond_radius = abs(u_local) + abs(v_local),
+        rounded_diamond = 1 - smoothstep(0.72, 1.12, diamond_radius),
+        variation = 1 + diamond_height_variation
+                    * sin((u + v) * 10.0 + texture_seed))
+    variation * (diamond_ridge_height * rounded_diamond
+                 - diamond_channel_depth * (1 - rounded_diamond));
+
+function controlled_variation(x, y) =
+    0.025 * sin(x * 15.0 + y * 11.0 + texture_seed)
+    + 0.02 * cos(x * 9.0 - y * 13.0 + texture_seed * 0.41);
+function drainage_channel_height(x, y) =
+    -0.14 * exp(-((y - 1.5*sin(x*8.0 + texture_seed))^2) / 24.0)
+    -0.12 * exp(-((x - 1.5*sin(y*7.0 - texture_seed*0.61))^2) / 26.0);
+function texture_fade(x, y) =
+    1 - smoothstep(texture_fade_start, texture_radius, sqrt(x * x + y * y));
+function combined_texture_height(x, y) =
+    let(r = sqrt(x * x + y * y))
+    r >= texture_radius ? 0 :
+    clamp(texture_fade(x, y) *
+          (macro_terrain(x, y)
+           + diamond_texture(x, y)
+           + macro_hills(x, y)
+           + macro_valleys(x, y)
+           + local_hills(x, y)
+           + local_valleys(x, y)
+           + drainage_channel_height(x, y)
+           + controlled_variation(x, y)),
+          valley_min_height, hill_max_height);
+
+function inner_sphere_z(r) =
+    bowl_height - sqrt(max(0, inner_radius*inner_radius - r*r));
+function inner_bowl_base_z(r) =
+    let(sphere_z = inner_sphere_z(min(r, inner_radius)),
+        blend = smoothstep(8.0, 15.0, r))
+    base_thickness + blend * (sphere_z - base_thickness);
+
+// ---------- Rounded primitives ----------
+module rounded_box(size=[10,10,10], radius=2, facets=20) {
     minkowski() {
-        cube(size - [2*r,2*r,2*r], center=true);
-        sphere(r=r, $fn=$fn);
+        cube(size - [2*radius, 2*radius, 2*radius], center=true);
+        sphere(r=radius, $fn=facets);
     }
 }
 
-module bowl_profile() {
-    outer_r = bowl_outer_diameter / 2;
-    inner_r = bowl_inner_diameter / 2;
-    polygon([
-        [outer_r, 0],
-        [outer_r, bowl_height - rim_width],
-        [outer_r - 1.0, bowl_height],
-        [inner_r + wall_thickness, bowl_height],
-        [inner_r + wall_thickness - 0.8, bowl_height - 1.0],
-        [inner_r + wall_thickness - 0.3, interior_depth],
-        [inner_r - 1.0, interior_depth - 2.0],
-        [0, interior_depth - 2.4],
-        [0, base_thickness],
-        [outer_r, base_thickness]
-    ]);
+// ---------- Near-hemispherical bowl shell and textured cavity ----------
+function outer_base_radius() =
+    sqrt(max(0, outer_radius*outer_radius - bowl_height*bowl_height));
+function outer_sphere_z(r) =
+    bowl_height - sqrt(max(0, outer_radius*outer_radius - r*r));
+function outer_bowl_z(r) =
+    let(r0 = outer_base_radius(), r1 = r0 + 3.0)
+    smoothstep(r0, r1, r) * outer_sphere_z(r);
+
+module bowl_exterior_blank() {
+    rotate_extrude($fn=terrain_preview_fn)
+        polygon(points=concat(
+            [[0, 0], [outer_base_radius(), 0]],
+            [for (i = [1:40])
+                let(r = outer_base_radius()
+                        + (outer_radius - outer_base_radius()) * i / 40)
+                [r, outer_bowl_z(r)]],
+            [[0, bowl_height], [0, 0]]
+        ));
+}
+
+// ---------- Closed height-field cavity cutter ----------
+function height_grid_size() =
+    max(4, ceil((2 * texture_radius) / texture_resolution));
+function grid_xy(i, j, n) =
+    [-texture_radius + 2 * texture_radius * i / n,
+     -texture_radius + 2 * texture_radius * j / n];
+function height_grid_points(n) =
+    let(side = n + 1, count = side * side)
+    concat(
+        [for (j = [0:n], i = [0:n])
+            let(p = grid_xy(i, j, n))
+            let(r = min(texture_radius, sqrt(p[0]*p[0] + p[1]*p[1])))
+            [p[0], p[1],
+             max(base_thickness,
+                 inner_bowl_base_z(r) + combined_texture_height(p[0], p[1]))]],
+        [for (j = [0:n], i = [0:n])
+            let(p = grid_xy(i, j, n))
+            [p[0], p[1], bowl_height + 1]]
+    );
+function perimeter_indices(n) = concat(
+    [for (i = [0:n]) i],
+    [for (j = [1:n]) j * (n + 1) + n],
+    [for (i = [n-1:-1:0]) n * (n + 1) + i],
+    [for (j = [n-1:-1:1]) j * (n + 1)]
+);
+function height_grid_faces(n) =
+    let(side = n + 1, count = side * side, perimeter = perimeter_indices(n))
+    concat(
+        [for (j = [0:n-1], i = [0:n-1], tri = [0:1])
+            let(k = j * side + i)
+            tri == 0 ? [k, k + side + 1, k + 1] : [k, k + side, k + side + 1]],
+        [for (j = [0:n-1], i = [0:n-1], tri = [0:1])
+            let(k = j * side + i + count)
+            tri == 0 ? [k, k + 1, k + side + 1] : [k, k + side + 1, k + side]],
+        [for (k = [0:len(perimeter)-1], tri = [0:1])
+            let(a = perimeter[k],
+                b = perimeter[(k + 1) % len(perimeter)])
+            tri == 0 ? [a, b, b + count] : [a, b + count, a + count]]
+    );
+
+module macro_terrain() {
+    interior_surface();
+}
+module interior_surface() {
+    n = height_grid_size();
+    intersection() {
+        polyhedron(points=height_grid_points(n), faces=height_grid_faces(n), convexity=10);
+        translate([0, 0, -0.2])
+            cylinder(h=bowl_height + 2, r=texture_radius, $fn=terrain_preview_fn);
+    }
 }
 
 module bowl_shell() {
     difference() {
-        rotate_extrude($fn=180)
-            bowl_profile();
-        translate([0, 0, base_thickness])
-            cylinder(h = bowl_height, r = bowl_inner_diameter/2 - 0.3, $fn=180);
-        translate([0,0,-0.1])
-            cylinder(h = base_thickness + 0.2, r = bowl_outer_diameter/2 - 1.0, $fn=180);
+        bowl_exterior_blank();
+        interior_surface();
     }
 }
+// ---------- Handle and its two attachment pads ----------
+function grip_height() = min(handle_height, bowl_height);
+function grip_center_z() = grip_height() / 2;
+function grip_center_x() = outer_radius + handle_projection / 2;
 
-module interior_base() {
-    translate([0,0,base_thickness])
-        cylinder(h = 0.8, r = bowl_inner_diameter/2 - wall_thickness - 0.4, $fn=180);
-}
-
-module macro_hills() {
-    inner_r = bowl_inner_diameter/2 - wall_thickness;
-    for (i = [0:11]) {
-        ang = i * (360/12) + rand_signed(seed + i * 19) * 22;
-        dist = inner_r * (0.25 + rand01(seed + i * 13) * 0.56);
-        x = cos(ang) * dist;
-        y = sin(ang) * dist;
-        translate([x, y, interior_depth - 1.4])
-            sphere(r = feature_radius * (0.8 + rand01(seed + i * 17) * 0.5), $fn=24);
-    }
-}
-
-module macro_valleys() {
-    inner_r = bowl_inner_diameter/2 - wall_thickness;
-    for (i = [0:9]) {
-        ang = i * (360/9) + rand_signed(seed + 100 + i * 23) * 18;
-        dist = inner_r * (0.28 + rand01(seed + 200 + i * 15) * 0.54);
-        x = cos(ang) * dist;
-        y = sin(ang) * dist;
-        translate([x, y, interior_depth - 2.8])
-            sphere(r = feature_radius * (0.65 + rand01(seed + 300 + i * 11) * 0.8), $fn=20);
-    }
-}
-
-module diamond_texture() {
-    inner_r = bowl_inner_diameter/2 - wall_thickness;
-    for (y = [-18:18]) {
-        for (x = [-18:18]) {
-            px = x * (diamond_length + diamond_spacing);
-            py = y * (diamond_length + diamond_spacing);
-            if (px*px + py*py > inner_r*inner_r) continue;
-            offset = (y % 2 == 0) ? 0 : (diamond_length + diamond_spacing) / 2.0;
-            translate([px + offset, py, interior_depth - 1.7])
-                rotate([0, 0, 45])
-                    scale([diamond_length * 0.55, diamond_width * 0.55, 1])
-                        cylinder(h = 1.0, r = 1.2, $fn=4, center=true);
-        }
-    }
-}
-
-module hybrid_texture() {
-    union() {
-        macro_hills();
-        macro_valleys();
-        diamond_texture();
-    }
-}
-
-module texture_transition() {
-    inner_r = bowl_inner_diameter/2 - wall_thickness;
-    difference() {
-        cylinder(h = 1.8, r = inner_r, center=true, $fn=180);
-        cylinder(h = 2.0, r = inner_r - edge_attenuation, center=true, $fn=180);
-    }
-}
-
-module drainage_channels() {
-    for (a = [0:120:360]) {
-        rotate([0,0,a])
-            translate([0, -2.0, interior_depth - 2.0])
-                scale([1, 4.0, 0.25])
-                    cylinder(h = 1.5, r = 4.0, $fn=24, center=true);
-    }
+module handle_junctions() {
+    // The blade vault sits below these separated upper/lower structural pads.
+    translate([outer_radius - 2.2, 0, 17.5])
+        rounded_box([13, handle_width + 8, 11], 4, rounded_fn);
+    translate([outer_radius - 1.8, 0, bowl_height - 6.5])
+        rounded_box([14, handle_width + 8, 11], 4, rounded_fn);
 }
 
 module handle() {
-    hull() {
-        translate([0, -handle_projection * 0.8, bowl_height - 12])
-            rounded_box([handle_width + 8, handle_projection * 0.9, 12], r = 4, $fn=36);
-        translate([0, -handle_projection * 0.25, bowl_height - 18])
-            rounded_box([handle_width, handle_projection * 0.7, 14], r = 3, $fn=36);
-        translate([0, -handle_projection * 0.8, bowl_height - 30])
-            rounded_box([handle_width + 8, handle_projection * 0.9, 12], r = 4, $fn=36);
+    difference() {
+        translate([grip_center_x(), 0, grip_center_z()])
+            rounded_box([handle_projection + 7, handle_width, grip_height()], handle_fillet_radius, rounded_fn);
+        translate([grip_center_x() + 0.8, 0, grip_center_z() + 1.2])
+            rounded_box([handle_projection - 2, handle_width + 2, max(8, grip_height() - 10)], 3, rounded_fn);
     }
 }
 
-module handle_junctions() {
-    translate([0, -handle_projection * 0.8, bowl_height - 12])
-        rounded_box([handle_width + 12, handle_projection * 1.15, 14], r = 5, $fn=36);
-    translate([0, -handle_projection * 0.8, bowl_height - 29])
-        rounded_box([handle_width + 12, handle_projection * 1.15, 14], r = 5, $fn=36);
+// ---------- Open-top angled safety-razor cradle ----------
+function dock_inner_r(diameter) = diameter / 2 + razor_handle_clearance;
+function dock_outer_r(diameter) = dock_inner_r(diameter) + razor_dock_wall;
+function dock_length() = 18;
+
+module dock_body(diameter=razor_handle_max_diameter) {
+    inner_r = dock_inner_r(diameter);
+    outer_r = dock_outer_r(diameter);
+    difference() {
+        hull() {
+            translate([0, 0, 0]) sphere(r=outer_r, $fn=rounded_fn*2);
+            translate([0, 0, dock_length()]) sphere(r=outer_r, $fn=rounded_fn*2);
+        }
+        translate([0, 0, -outer_r-1])
+            cylinder(h=dock_length() + 2*outer_r + 2, r=inner_r, $fn=rounded_fn*2);
+        // Up-facing opening: the local negative-X direction rotates toward +Z.
+        translate([-outer_r-2, 0, dock_length()/2])
+            cube([2*(outer_r+1), 4*outer_r, dock_length()+2*outer_r+2], center=true);
+        // Open drainage ports pass only to the exterior, never to the blade vault.
+        for (z = [4, 9, 14])
+            translate([inner_r + razor_dock_wall/2, 0, z])
+                rotate([0, 90, 0])
+                    cylinder(h=razor_dock_wall+1.2, r=1.1, center=true, $fn=16);
+    }
 }
 
 module razor_dock() {
-    translate([0, -handle_projection * 0.55, bowl_height - 11])
-    rotate([0, -razor_dock_angle, 0])
-        difference() {
-            hull() {
-                translate([0, 0, 0])
-                    rotate([90,0,0])
-                        cylinder(h = razor_dock_depth, r = razor_handle_max_diameter / 2 + razor_handle_clearance, center=true, $fn=64);
-                translate([0, 0, 18])
-                    rotate([90,0,0])
-                        cylinder(h = razor_dock_depth, r = razor_handle_max_diameter / 2 + razor_handle_clearance, center=true, $fn=64);
-            }
-            translate([0, 0, 0])
-                rotate([90,0,0])
-                    cylinder(h = razor_dock_depth + 2, r = razor_handle_max_diameter / 2, center=true, $fn=64);
-            translate([0, 0, 7])
-                cube([12, razor_dock_depth + 3, 24], center=true);
-        }
+    translate([outer_radius + 2.0, 0, bowl_height - 1])
+        rotate([0, 90 - razor_dock_angle, 0])
+            dock_body();
 }
 
 module razor_retention() {
-    translate([0, -handle_projection * 0.55, bowl_height - 11])
-    rotate([0, -razor_dock_angle, 0]) {
-        for (x = [-1, 1]) {
-            translate([x * (razor_handle_max_diameter / 2 + 1), 0, 9])
-                rotate([90,0,0])
-                    cylinder(h = 3.5, r = 1.4, center=true, $fn=24);
+    translate([outer_radius + 2.0, 0, bowl_height - 1])
+        rotate([0, 90 - razor_dock_angle, 0])
+            for (side = [-1, 1])
+                translate([-0.4, side * dock_inner_r(razor_handle_max_diameter) * 0.86, 8])
+                    sphere(r=1.5, $fn=rounded_fn);
+}
+
+module razor_support_mounts() {
+    for (side = [-1, 1])
+        translate([outer_radius + 2.0, side * (handle_width/2 - 1), bowl_height - 1])
+            rounded_box([12, 4, 8], 1.5, rounded_fn);
+}
+
+module razor_head_support() {
+    translate([outer_radius + 2.0, 0, bowl_height - 1])
+        rotate([0, 90 - razor_dock_angle, 0])
+            translate([0, 0, dock_length() + 5])
+                rounded_box([19, 4, 3], 1.2, rounded_fn);
+}
+
+module razor_dock_assembly() {
+    union() {
+        razor_dock();
+        razor_retention();
+        razor_support_mounts();
+        razor_head_support();
+    }
+}
+
+// ---------- Dry blade vault and sliding tray ----------
+function vault_center_x() = grip_center_x() + 2.5;
+function vault_center_y() = 0;
+function vault_width() = 30;
+function vault_length() = 52;
+function vault_height() = 13;
+function drawer_inner_width() = de_blade_width + 2*blade_clearance;
+function drawer_outer_width() = drawer_inner_width() + 2*drawer_wall;
+function drawer_inner_length() = de_blade_length + 2*blade_clearance;
+function drawer_outer_length() = drawer_inner_length() + 2*drawer_wall;
+function drawer_outer_height() = 6.8;
+function drawer_center_y(open=false) =
+    vault_center_y()
+    + (open ? min(drawer_open_travel, drawer_stop_travel()) : 0);
+function drawer_z() = vault_height()/2 + 0.3;
+function drawer_cavity_width() = drawer_outer_width() + 2*drawer_clearance;
+function drawer_cavity_length() = drawer_outer_length() + 2*drawer_clearance;
+function drawer_front_closed_y() = drawer_center_y(false) + drawer_outer_length()/2;
+function vault_front_y() = vault_center_y() + vault_length()/2;
+function drawer_channel_start_y() = drawer_center_y(false) + 12.0;
+function drawer_channel_end_y() = vault_front_y() - 2.2;
+function drawer_stop_travel() =
+    drawer_channel_end_y() - 0.9 - drawer_center_y(false) - 13.0;
+function drawer_tab_z() = drawer_z() + 1.9;
+function drawer_tab_x() = drawer_outer_width()/2 + drawer_endstop_overlap;
+
+module blade_storage_shell() {
+    translate([vault_center_x(), vault_center_y(), vault_height()/2])
+        rounded_box([vault_width(), vault_length(), vault_height()], 2.2, rounded_fn);
+}
+
+module blade_vault_void() {
+    cavity_w = drawer_cavity_width();
+    cavity_l = drawer_cavity_length();
+    cavity_h = 7.8;
+    cavity_front_y = drawer_center_y(false) + cavity_l/2;
+    passage_length = vault_front_y() - cavity_front_y + 2.0;
+    passage_center_y = (vault_front_y() + cavity_front_y)/2 + 1.0;
+    translate([vault_center_x(), drawer_center_y(false), drawer_z()])
+        cube([cavity_w, cavity_l, cavity_h], center=true);
+    translate([vault_center_x(), passage_center_y, drawer_z()])
+        cube([cavity_w, passage_length, cavity_h], center=true);
+    // Side rails clear the drawer's stop tabs and terminate before the outlet.
+    for (side = [-1, 1])
+        translate([vault_center_x() + side*(cavity_w/2 + 0.35),
+                   (drawer_channel_start_y() + drawer_channel_end_y())/2,
+                   drawer_tab_z()])
+            cube([1.4, drawer_channel_end_y() - drawer_channel_start_y(),
+                  3.2], center=true);
+    // The passive detent recesses are isolated from the wet razor dock.
+    for (side = [-1, 1])
+        translate([vault_center_x() + side*(cavity_w/2 + 0.32),
+                   drawer_center_y(false), drawer_tab_z()])
+            sphere(r=detent_bump_radius + 0.45, $fn=rounded_fn);
+}
+
+module blade_storage() {
+    difference() {
+        blade_storage_shell();
+        blade_vault_void();
+    }
+}
+
+module blade_drawer_detent() {
+    for (side = [-1, 1]) {
+        // Integral cantilever carries the bump; no separate spring or hardware.
+        translate([vault_center_x() + side*(drawer_outer_width()/2
+                                             - detent_flexure_thickness/2),
+                   drawer_center_y(drawer_open) - 0.4,
+                   drawer_z() + 1.7])
+            cube([detent_flexure_thickness, detent_flexure_length, 2.6], center=true);
+        translate([vault_center_x() + side*(drawer_outer_width()/2 + 0.16),
+                   drawer_center_y(drawer_open), drawer_tab_z()])
+            sphere(r=detent_bump_radius, $fn=rounded_fn);
+    }
+}
+
+module blade_drawer_endstop() {
+    for (side = [-1, 1])
+        translate([vault_center_x() + side*(drawer_outer_width()/2
+                                             + drawer_endstop_overlap/2),
+                   drawer_center_y(drawer_open) + 13.0, drawer_tab_z()])
+            rounded_box([drawer_endstop_overlap, 1.8, 2.4], 0.4, rounded_fn);
+}
+
+module blade_drawer_pull_tab() {
+    translate([vault_center_x(), drawer_center_y(drawer_open)
+                                  + drawer_outer_length()/2
+                                  + drawer_pull_projection/2 - 0.4,
+               drawer_z()])
+        rounded_box([drawer_pull_width, drawer_pull_projection + 0.8,
+                     drawer_pull_height], min(1.8, drawer_pull_height/2 - 0.1), rounded_fn);
+}
+
+module blade_drawer() {
+    tray_w = drawer_outer_width();
+    tray_l = drawer_outer_length();
+    tray_h = drawer_outer_height();
+    tray_z = drawer_z();
+    tray_y = drawer_center_y(drawer_open);
+    union() {
+        difference() {
+            translate([vault_center_x(), tray_y, tray_z])
+                rounded_box([tray_w, tray_l, tray_h], 1.0, rounded_fn);
+            // Recess leaves a robust floor while keeping the blades below the rim.
+            translate([vault_center_x(), tray_y, tray_z + 1.3])
+                cube([drawer_inner_width(), drawer_inner_length(), tray_h + 1], center=true);
+            // Slots isolate two passive cantilevers carrying the detent bumps.
+            for (side = [-1, 1])
+                translate([vault_center_x() + side*tray_w/2, tray_y + 0.4,
+                           tray_z])
+                    cube([drawer_wall + 0.5, detent_flexure_length + 0.8,
+                          tray_h + 0.6], center=true);
+        }
+        blade_drawer_detent();
+        blade_drawer_endstop();
+        blade_drawer_pull_tab();
+    }
+}
+
+module blade_stack(count, tray_y, tray_z) {
+    stack_spacing = de_blade_thickness + 0.12;
+    for (i = [0:count-1])
+        translate([vault_center_x(), tray_y,
+                   tray_z - drawer_outer_height()/2 + 1.3
+                   + de_blade_thickness/2 + i*stack_spacing])
+            cube([de_blade_width - 0.4, de_blade_length - 0.4, de_blade_thickness], center=true);
+}
+
+module bowl_body() {
+    difference() {
+        union() {
+            bowl_shell();
+            handle_junctions();
+            handle();
+            blade_storage_shell();
+            razor_dock_assembly();
+        }
+        blade_vault_void();
+    }
+}
+
+module assembly_preview() {
+    union() {
+        bowl_body();
+        blade_drawer();
+    }
+}
+
+// ---------- Independent test coupons ----------
+function coupon_id(x, y) =
+    let(col = min(3, max(0, floor((x + 20) / 10))),
+        row = min(1, max(0, floor((y + 20) / 20))))
+    row * 4 + col;
+function coupon_lx(x) = x - (-15 + 10 * min(3, max(0, floor((x + 20) / 10))));
+function coupon_ly(y) = y - (-10 + 20 * min(1, max(0, floor((y + 20) / 20))));
+function coupon_height(x, y) =
+    let(id = coupon_id(x, y),
+        lx = coupon_lx(x),
+        ly = coupon_ly(y),
+        hill = 1.5 * exp(-((lx+0.5)^2 + (ly-1)^2) / 18),
+        valley = -1.5 * exp(-((lx-0.5)^2 + (ly+1)^2) / 12),
+        deep = -3.0 * exp(-((lx+0.8)^2 + (ly-0.5)^2) / 18),
+        diamond = 0.72 * diamond_texture(lx, ly),
+        fade = 1 - smoothstep(5.0, 9.5, sqrt(lx*lx + ly*ly)))
+    id == 0 ? 0 :
+    id == 1 ? hill :
+    id == 2 ? valley :
+    id == 3 ? deep :
+    id == 4 ? diamond :
+    id == 5 ? hill + diamond :
+    id == 6 ? valley + 0.55*diamond :
+    fade * (macro_hills(lx*0.55, ly*0.55) + diamond);
+
+function coupon_points(n) =
+    let(side = n+1, count = side*side, step = 40/n)
+    concat(
+        [for (j = [0:n], i = [0:n])
+            let(x = -20+i*step, y = -20+j*step)
+            [x, y, 10 + coupon_height(x, y)]],
+        [for (j = [0:n], i = [0:n])
+            let(x = -20+i*step, y = -20+j*step)
+            [x, y, 0]]
+    );
+function coupon_faces(n) =
+    let(side = n+1, count = side*side,
+        perimeter = concat(
+            [for (i = [0:n]) i],
+            [for (j = [1:n]) j*(n+1)+n],
+            [for (i = [n-1:-1:0]) n*(n+1)+i],
+            [for (j = [n-1:-1:1]) j*(n+1)]))
+    concat(
+        [for (j = [0:n-1], i = [0:n-1], tri = [0:1])
+            let(k = j*side+i)
+            tri == 0 ? [k,k+1,k+side+1] : [k,k+side+1,k+side]],
+        [for (j = [0:n-1], i = [0:n-1], tri = [0:1])
+            let(k = j*side+i+count)
+            tri == 0 ? [k,k+side+1,k+1] : [k,k+side,k+side+1]],
+        [for (k = [0:len(perimeter)-1], tri = [0:1])
+            let(a = perimeter[k], b = perimeter[(k+1)%len(perimeter)])
+            tri == 0 ? [a,b+count,b] : [a,a+count,b+count]]
+    );
+
+module texture_test_coupon() {
+    n = max(24, ceil(40 / texture_resolution));
+    polyhedron(points=coupon_points(n), faces=coupon_faces(n), convexity=10);
+}
+
+module dock_sample(diameter, x_offset) {
+    translate([x_offset, 0, 0])
+        rotate([0, 90 - razor_dock_angle, 0])
+            union() {
+                dock_body(diameter);
+                for (side = [-1, 1])
+                    translate([-0.4, side*dock_inner_r(diameter)*0.86, 8])
+                        sphere(r=1.5, $fn=rounded_fn);
+                translate([0,0,dock_length()+5])
+                    rounded_box([19,4,3],1.2,rounded_fn);
+            }
+}
+
+module razor_dock_test() {
+    diameters = [8,10,12,15];
+    for (i = [0:3])
+        dock_sample(diameters[i], i*34);
+}
+
+module blade_storage_test() {
+    for (i = [1:3]) {
+        offset_x = (i-2) * 34;
+        translate([offset_x-vault_center_x(), 0, 0]) {
+            blade_storage();
+            blade_drawer();
+            blade_stack(i == 1 ? 1 : i == 2 ? 3 : 5,
+                        drawer_center_y(false), drawer_z());
         }
     }
 }
 
-module razor_head_support() {
-    translate([0, -handle_projection * 0.55, bowl_height - 11])
-    rotate([0, -razor_dock_angle, 0])
-        translate([0, 0, 16])
-            cube([9, 3, 4], center=true);
+module handle_strength_test() {
+    bowl_body();
 }
 
-module blade_storage() {
-    translate([0, -handle_projection * 0.3, 4])
-        rounded_box([de_blade_width + 2, 28, 11], r=2, $fn=28);
+module parked_razor() {
+    translate([outer_radius + 2.0, 0, bowl_height - 1])
+        rotate([0, 90 - razor_dock_angle, 0]) {
+            translate([0,0,3])
+                cylinder(h=18, r=5.4, $fn=48);
+            translate([0,0,22])
+                rounded_box([24, 5, 13], 1.4, 24);
+        }
 }
 
-module blade_drawer() {
-    difference() {
-        translate([0, -handle_projection * 0.3, 5])
-            rounded_box([de_blade_width + blade_clearance * 2, 24, 8], r=2, $fn=28);
-        translate([0, -handle_projection * 0.3, 6])
-            rounded_box([de_blade_width, 20, 6], r=1.6, $fn=28);
+// ---------- View and section modes ----------
+module scene() {
+    if (render_mode == "texture_test_coupon")
+        texture_test_coupon();
+    else if (render_mode == "razor_dock_test")
+        razor_dock_test();
+    else if (render_mode == "blade_storage_test")
+        blade_storage_test();
+    else if (render_mode == "handle_strength_test")
+        handle_strength_test();
+    else if (render_mode == "razor_parked") {
+        assembly_preview();
+        parked_razor();
     }
+    else if (render_mode == "blades_inside") {
+        assembly_preview();
+        blade_stack(blade_storage_count, drawer_center_y(drawer_open), vault_height()/2 + 0.3);
+    }
+    else if (render_mode == "texture_section")
+        difference() {
+            assembly_preview();
+            translate([0, 50, 24]) cube([120, 100, 60], center=true);
+        }
+    else if (render_mode == "handle_section")
+        difference() {
+            assembly_preview();
+            translate([grip_center_x() + 45, 0, 24])
+                cube([90, 100, 60], center=true);
+        }
+    else if (render_mode == "blade_section")
+        difference() {
+            union() {
+                assembly_preview();
+                blade_stack(blade_storage_count, drawer_center_y(false), vault_height()/2 + 0.3);
+            }
+            translate([vault_center_x()+50, 0, 7]) cube([100, 100, 30], center=true);
+        }
+    else
+        assembly_preview();
 }
 
-module blade_retainer() {
-    translate([0, -handle_projection * 0.45, 5])
-        cube([de_blade_width + 5, 2.5, 11], center=true);
+module selected_part() {
+    if (part == "bowl")
+        bowl_body();
+    else if (part == "bowl_shell")
+        bowl_shell();
+    else if (part == "blade_drawer")
+        blade_drawer();
+    else if (part == "texture_test")
+        texture_test_coupon();
+    else if (part == "razor_dock_test")
+        razor_dock_test();
+    else if (part == "blade_storage_test")
+        blade_storage_test();
+    else if (part == "handle_strength_test")
+        handle_strength_test();
+    else
+        scene();
 }
 
-// Embossed name on the front exterior wall. Pacifico must be installed locally.
-module name_marking() {
-    translate([0, -(bowl_outer_diameter / 2) - 0.05, name_z])
-        rotate([90, 0, 0])
-            linear_extrude(height = name_depth, center = false, convexity = 4)
-                text(name_text, size = name_size, font = name_font,
-                     halign = "center", valign = "center", spacing = name_spacing);
-}
-
-module assembly_preview() {
-    color([0.8,0.84,0.9,1]) bowl_shell();
-    color([0.7,0.9,0.95,0.7]) translate([0,0,base_thickness]) hybrid_texture();
-    color([0.7,0.72,0.74,1]) handle();
-    color([0.74,0.76,0.8,1]) handle_junctions();
-    color([0.97,0.74,0.33,1]) razor_dock();
-    color([0.94,0.68,0.25,1]) razor_retention();
-    color([0.88,0.60,0.20,1]) razor_head_support();
-    color([0.55,0.58,0.62,1]) blade_drawer();
-    color([0.95,0.75,0.18,1]) name_marking();
-}
-
-if (render_mode == "assembly") {
-    assembly_preview();
-} else if (render_mode == "texture_coupon") {
-    cube([40,40,2], center=true);
-} else if (render_mode == "dock_test") {
-    for (d = [8,10,12,15]) translate([d*2.0, 0, 0]) razor_dock();
-} else if (render_mode == "blade_test") {
-    blade_drawer();
-    translate([30,0,0]) blade_storage();
-} else if (render_mode == "handle_test") {
-    handle();
-    handle_junctions();
-} else {
-    assembly_preview();
-}
+if (render_mode == "texture_closeup" && part == "assembly")
+    intersection() {
+        selected_part();
+        translate([0, 0, nominal_floor_z + 0.5]) cube([48, 48, 24], center=true);
+    }
+else
+    selected_part();
