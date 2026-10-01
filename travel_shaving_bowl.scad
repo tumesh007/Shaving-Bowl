@@ -470,7 +470,7 @@ module blade_drawer_detent() {
                    drawer_center_y(drawer_open) - 0.4,
                    drawer_z() + 1.7])
             cube([detent_flexure_thickness, detent_flexure_length, 2.6], center=true);
-        translate([vault_center_x() + side*(drawer_outer_width()/2 + 0.16),
+        translate([vault_center_x() + side*(drawer_outer_width()/2 + 0.16 - 0.2),
                    drawer_center_y(drawer_open), drawer_tab_z()])
             sphere(r=detent_bump_radius, $fn=rounded_fn);
     }
@@ -479,9 +479,9 @@ module blade_drawer_detent() {
 module blade_drawer_endstop() {
     for (side = [-1, 1])
         translate([vault_center_x() + side*(drawer_outer_width()/2
-                                             + drawer_endstop_overlap/2),
+                                             + (drawer_endstop_overlap - 0.2)/2),
                    drawer_center_y(drawer_open) + 13.0, drawer_tab_z()])
-            rounded_box([drawer_endstop_overlap, 1.8, 2.4], 0.4, rounded_fn);
+            rounded_box([drawer_endstop_overlap + 0.2, 1.8, 2.4], 0.4, rounded_fn);
 }
 
 module blade_drawer_pull_tab() {

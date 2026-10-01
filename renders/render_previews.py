@@ -156,7 +156,7 @@ def standard_scene(name, target=(14, -1, 26), direction=(1, -1, 0.9), scale=135,
         bpy.ops.mesh.primitive_cube_add(size=1, location=head_pos)
         head = bpy.context.object
         head.name = "Generic razor head"
-        head.dimensions = (9, 42, 7)
+        head.dimensions = (42, 9, 7)
         head.rotation_euler = axis.to_track_quat("Z", "Y").to_euler()
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
         head.data.materials.append(RAZOR_MAT)
