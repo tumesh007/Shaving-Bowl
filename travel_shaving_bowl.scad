@@ -9,9 +9,9 @@ use <fonts/Pacifico-Regular.ttf>
  */
 
 // ---------- Main dimensions (millimetres) ----------
-bowl_outer_diameter = 80;
-bowl_inner_diameter = 67;
-bowl_height = 35;
+bowl_outer_diameter = 84;
+bowl_inner_diameter = 73.7;
+bowl_height = 38.5;
 wall_thickness = 3;
 base_thickness = 3.5;
 rim_width = 6;
@@ -51,6 +51,9 @@ razor_handle_max_diameter = 15;
 razor_handle_clearance = 1.0;
 razor_dock_wall = 3.0;
 dock_raise = 8;
+overhang_safe = true;
+gusset_start = 2.0;
+gusset_drop = 12.0;
 
 // ---------- Razor head rest (half-round shelf) ----------
 head_rest_radius = 24;
@@ -215,16 +218,29 @@ function outer_base_radius() =
 function outer_sphere_z(r) =
     bowl_height - sqrt(max(0, outer_radius*outer_radius - r*r));
 function outer_bowl_z(r) =
-    let(r0 = outer_base_radius(), r1 = r0 + 3.0)
-    smoothstep(r0, r1, r) * outer_sphere_z(r);
+    overhang_safe ?
+        let(r_tangent = outer_radius * sin(46),
+            z_tangent = bowl_height - outer_radius * cos(46),
+            r_foot = r_tangent - z_tangent / tan(46))
+        (r >= r_tangent) ?
+            outer_sphere_z(r) :
+            max(0, (r - r_foot) * tan(46)) :
+        let(r0 = outer_base_radius(), r1 = r0 + 3.0)
+        smoothstep(r0, r1, r) * outer_sphere_z(r);
+
+function outer_blank_start_radius() =
+    overhang_safe ?
+        (outer_radius * sin(46) - (bowl_height - outer_radius * cos(46)) / tan(46)) :
+        outer_base_radius();
 
 module bowl_exterior_blank() {
+    r_start = outer_blank_start_radius();
     rotate_extrude($fn=terrain_preview_fn)
         polygon(points=concat(
-            [[0, 0], [outer_base_radius(), 0]],
+            [[0, 0], [r_start, 0]],
             [for (i = [1:40])
-                let(r = outer_base_radius()
-                        + (outer_radius - outer_base_radius()) * i / 40)
+                let(r = r_start
+                        + (outer_radius - r_start) * i / 40)
                 [r, outer_bowl_z(r)]],
             [[0, bowl_height], [0, 0]]
         ));
@@ -295,8 +311,18 @@ function grip_center_x() = outer_radius + handle_projection / 2;
 
 module handle_junctions() {
     // The blade vault sits below these separated upper/lower structural pads.
-    translate([outer_radius - 2.2, 0, 17.5])
-        rounded_box([13, handle_width + 8, 11], 4, rounded_fn);
+    if (!overhang_safe) {
+        translate([outer_radius - 2.2, 0, 17.5])
+            rounded_box([13, handle_width + 8, 11], 4, rounded_fn);
+    } else {
+        // Overhang-safe: bottom of lower junction tapers down at >50 degrees to bed
+        hull() {
+            translate([outer_radius - 2.2, 0, 17.5])
+                rounded_box([13, handle_width + 8, 11], 4, rounded_fn);
+            translate([outer_radius - 2.2 - 8.0, 0, 0.25])
+                cube([2, handle_width + 8, 0.5], center=true);
+        }
+    }
     translate([outer_radius - 1.8, 0, bowl_height - 6.5])
         rounded_box([14, handle_width + 8, 11], 4, rounded_fn);
 }
@@ -305,8 +331,19 @@ module handle() {
     difference() {
         translate([grip_center_x(), 0, grip_center_z()])
             rounded_box([handle_projection + 7, handle_width, grip_height()], handle_fillet_radius, rounded_fn);
-        translate([grip_center_x() + 0.8, 0, grip_center_z() + 1.2])
-            rounded_box([handle_projection - 2, handle_width + 2, max(8, grip_height() - 10)], 3, rounded_fn);
+        if (!overhang_safe) {
+            translate([grip_center_x() + 0.8, 0, grip_center_z() + 1.2])
+                rounded_box([handle_projection - 2, handle_width + 2, max(8, grip_height() - 10)], 3, rounded_fn);
+        } else {
+            // Cutout with 45-degree pitched roof to eliminate horizontal ceiling
+            translate([grip_center_x() + 0.8, 0, grip_center_z() + 1.2])
+                hull() {
+                    rounded_box([handle_projection - 2, handle_width + 2, max(8, grip_height() - 10) - 8], 3, rounded_fn);
+                    translate([0, 0, (max(8, grip_height() - 10) - 8)/2 + (handle_projection - 2)/2 - 1.5])
+                        rotate([90, 0, 0])
+                            cylinder(h=handle_width + 2, r=1.5, center=true, $fn=rounded_fn);
+                }
+        }
     }
 }
 
@@ -356,11 +393,36 @@ module razor_support_mounts() {
             rounded_box([12, 4, 8], 1.5, rounded_fn);
 }
 
+module head_rest_lower_plate() {
+    lower_inset = 0.5; // deliberate inset to prevent non-manifold edge at the lip drain gap
+    lower_drop = head_rest_gap + 1.0;
+    z_pos = dock_length() + head_rest_gap;
+    difference() {
+        hull() {
+            translate([0, 0, z_pos - 0.05])
+                intersection() {
+                    cylinder(h=0.1, r=head_rest_radius - lower_inset, $fn=rounded_fn*3);
+                    translate([-head_rest_flat_edge + lower_inset, -head_rest_radius, -0.05])
+                        cube([head_rest_radius + head_rest_flat_edge, 2*head_rest_radius, 0.2]);
+                }
+            translate([0, 0, z_pos - lower_drop])
+                cylinder(h=0.1, r=dock_outer_r(razor_handle_max_diameter), $fn=rounded_fn*2);
+        }
+        translate([0, 0, z_pos - lower_drop - 1])
+            cylinder(h=lower_drop + 2, r=neck_slot_radius, $fn=rounded_fn*2);
+        translate([-neck_slot_radius - 6, -neck_slot_radius, z_pos - lower_drop - 1])
+            cube([neck_slot_radius + 6, 2*neck_slot_radius, lower_drop + 2]);
+    }
+}
+
 module razor_head_support() {
     translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
-        rotate([0, 90 - razor_dock_angle, 0])
+        rotate([0, 90 - razor_dock_angle, 0]) {
             translate([0, 0, dock_length() + head_rest_gap])
                 head_rest_shape();
+            if (overhang_safe)
+                head_rest_lower_plate();
+        }
 }
 
 module head_rest_shape() {
@@ -390,12 +452,29 @@ module head_rest_shape() {
     }
 }
 
+module dock_gussets() {
+    for (side = [-1, 1]) {
+        hull() {
+            translate([outer_radius + 2.0 + gusset_start,
+                       side * (handle_width/2 - 1),
+                       bowl_height - 1 + dock_raise - 2])
+                rounded_box([8, 3.5, 4], 1.2, rounded_fn);
+            translate([outer_radius + 2.0 + gusset_start - gusset_drop,
+                       side * (handle_width/2 - 1),
+                       bowl_height - 1 + dock_raise - 2 - gusset_drop])
+                rounded_box([8, 3.5, 4], 1.2, rounded_fn);
+        }
+    }
+}
+
 module razor_dock_assembly() {
     union() {
         razor_dock();
         razor_retention();
         razor_support_mounts();
         razor_head_support();
+        if (overhang_safe)
+            dock_gussets();
     }
 }
 

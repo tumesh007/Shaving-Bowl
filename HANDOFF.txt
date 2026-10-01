@@ -1,5 +1,5 @@
 TRAVEL SHAVING BOWL — HANDOFF
-Updated: 2026-09-30
+Updated: 2026-10-01
 
 PROJECT
 Repository: /home/pnb/repos/Shaving-Bowl
@@ -7,54 +7,83 @@ GitHub: https://github.com/tumesh007/Shaving-Bowl
 Branch: v3-update
 
 SUMMARY OF CHANGES
-1. Washing machine diamond drum texture restored:
-   - Restored original v2 bowl dimensions (`bowl_outer_diameter = 80;`, `bowl_inner_diameter = 67;`, `complete_width_with_handle = 105;`).
-   - The previous 10% diameter enlargement caused the spherical floor equation to dip below the 3.5 mm base, creating an unintentional flattened circular moat. Restoring the v2 profile brings back the crisp, unbroken washing machine diamond drum pattern across the entire bowl interior.
-2. Dock elevation:
-   - Retained parameter `dock_raise = 8;` in travel_shaving_bowl.scad.
-   - Applied `+ dock_raise` to `razor_dock()`, `razor_retention()`, `razor_support_mounts()`, `razor_head_support()`, and `parked_razor()`.
-   - Blender render pipeline aligned with `dock_raise = 8` and `center = Vector((42.0, 0, 34 + dock_raise))`.
-3. Embossed text emboldening:
-   - Retained parameter `emboss_bold = 0.15;` in travel_shaving_bowl.scad.
-   - Wrapped text in `offset(r=emboss_bold)` after `resize([width, 0], auto=true)`.
-   - Preserved wording ("Tumesh's" / "Travel Shaving Bowl") and `emboss_width2 = 48` without shortening text.
-4. Assets refreshed:
-   - All 7 production and test STLs exported with `preview_mode=false`.
-   - All 15 preview renders regenerated via Blender EEVEE.
+1. Bowl dimensions resized with preserved diamond drum texture:
+   - Updated dimensions: `bowl_outer_diameter = 84;`, `bowl_inner_diameter = 73.7;`, `bowl_height = 38.5;`.
+   - `bowl_height` stays >= `inner_radius + 1.5 mm` (38.5 >= 36.85 + 1.5 = 38.35 mm), ensuring the inner sphere never dips below the floor.
+   - The full, crisp washing machine diamond drum pattern is preserved across the entire floor without flat rings or bald spots.
+2. 45-degree overhang-safe geometry (`overhang_safe = true`):
+   - Conical base transition meeting the sphere tangentially at 46 degrees, yielding a solid bed footprint radius of 21.497 mm at z = 0.3 mm (requirement >= 20.0 mm).
+   - Razor dock support gussets (`gusset_start = 2.0;`, `gusset_drop = 12.0;`) eliminating supports under the cradle and mount posts.
+   - Chamfered head rest lower plate (`head_rest_lower_plate()`) with 0.5 mm perimeter inset eliminating ledge overhangs without non-manifold edge artifacts.
+   - 45-degree pitched roof on the handle cutout and a 54-degree lower handle junction taper directly to the base.
+   - Total overhang area (nz < -0.72, z > 0.5 mm) reduced to 1,964.87 mm^2 (target <= 2,000 mm^2).
+   - The only overhang cluster > 500 mm^2 is the 27 mm straight drawer ceiling bridge at z = 10.70 mm (1,286.64 mm^2).
+3. 1-piece blade drawer:
+   - Detent nubs overlap 0.2 mm into the drawer body, making `blade_drawer.stl` a single connected component (1 component, watertight).
+4. Dock elevation:
+   - Parameter `dock_raise = 8;` applied to dock, retention bumps, head shelf, mount posts, and previews.
+5. Embossed text emboldening:
+   - Parameter `emboss_bold = 0.15;` with `offset(r=emboss_bold)`, achieving 98.27% stroke area >= 0.8 mm.
+6. Preview renders:
+   - Generic razor head dimension updated to (42, 9, 7) mm, resting horizontally across the shelf.
+   - All 15 preview images regenerated via Blender EEVEE.
 
 VALIDATION MEASUREMENTS
 1. Mesh Topology & Closure:
-   - travel_shaving_bowl.stl: Watertight=True, 1 connected component (len(mesh.split()) == 1: PASS).
-     Vertices: 26,898 | Faces: 53,804 | Bounds: [[-40.04, -40.0, 0.0], [75.73, 40.0, 58.46]].
-   - blade_drawer.stl: Watertight=True, 1 connected component (len(mesh.split()) == 1: PASS).
+   - travel_shaving_bowl.stl: Watertight=True, 1 connected component (Simple: yes).
+     Vertices: 26,365 | Faces: 52,738 | Bounding box height: 62.206 mm.
+     Bounds: [[-42.0, -42.0, 0.0], [77.726, 42.0, 62.206]].
+   - blade_drawer.stl: Watertight=True, 1 connected component.
    - texture_test_coupon.stl: Watertight=True, 1 component.
-   - razor_dock_test.stl: Watertight=True, 4 components. Adjacent gaps: 13.772 mm, 13.399 mm, 12.838 mm (PASS).
-   - blade_storage_test.stl: Watertight=True, 15 components (3 drawers with 1-piece bodies + dummy blade stacks).
+   - razor_dock_test.stl: Watertight=True, 4 components.
+   - blade_storage_test.stl: Watertight=True, 15 components.
    - handle_strength_test.stl: Watertight=True, 1 component.
    - emboss_test.stl: Watertight=True, 1 component.
 
-2. Line-2 Stroke Width Analysis ("Travel Shaving Bowl"):
-   - Measured with 0.01 mm raster medial axis + 0.40 mm radius disk opening:
-     - Total text area: 130.058 mm^2
-     - Min stroke: 0.0200 mm
-     - Median stroke: 0.9402 mm (improved from 0.622 mm in v2)
-     - Mean stroke: 0.9197 mm
-     - Area fraction with stroke >= 0.8 mm: 98.27% (Requirement >= 90%: PASS).
+2. Overhang Analysis (nz < -0.72, z > 0.5 mm):
+   - Total overhang area: 1,964.87 mm^2 (Requirement <= 2,000 mm^2: PASS).
+   - Top 8 clusters:
+     - Cluster 1: area = 1,286.64 mm^2 | center = [55.50, 1.24, 10.70] | z-span = [10.70, 10.70] [Drawer ceiling bridge]
+     - Cluster 2: area =   231.03 mm^2 | center = [56.76, 0.00, 39.71] | z-span = [35.01, 44.55]
+     - Cluster 3: area =   156.47 mm^2 | center = [74.61, 0.00, 35.36] | z-span = [32.62, 39.52]
+     - Cluster 4: area =    95.97 mm^2 | center = [43.51, 0.00, 26.98] | z-span = [26.53, 27.67]
+     - Cluster 5: area =    24.32 mm^2 | center = [40.57, 0.00,  0.76] | z-span = [ 0.34,  1.17]
+     - Cluster 6: area =    12.39 mm^2 | center = [41.98, 17.90, 10.30] | z-span = [10.30, 10.30]
+     - Cluster 7: area =    12.39 mm^2 | center = [69.03, 17.90, 10.30] | z-span = [10.30, 10.30]
+     - Cluster 8: area =    11.81 mm^2 | center = [69.73, -8.05,  0.54] | z-span = [ 0.34,  0.64]
+   - Clusters above 500 mm^2: exactly 1 (Drawer bridge ceiling at z = 10.70 mm).
 
-3. Shaft Cylinder Collision Analysis (t=3..21 mm):
-   - Handle shell / bowl wall clearance: 0.0000 mm^3 collision across all radii (100% free of handle shell collision).
+3. Bowl Footprint Radius at z = 0.3 mm:
+   - min = 21.497 mm, mean = 21.530 mm, max = 30.927 mm (Requirement >= 20.0 mm: PASS).
+
+4. Shaft Cylinder Collision Analysis (t=3..21 mm):
    - Intersection volumes:
      - Radius 5.4 mm (dia 10.8 mm): 0.000000 mm^3 (0.0000%) - Requirement 0.000 mm^3: PASS.
      - Radius 5.8 mm (dia 11.6 mm): 0.000000 mm^3 (0.0000%) - Requirement 0.000 mm^3: PASS.
      - Radius 6.0 mm (dia 12.0 mm): 0.215773 mm^3 (retention bumps only: 0.2158 mm^3).
-     - Radius 6.5 mm (dia 13.0 mm): 3.245991 mm^3 (retention bumps only: 3.2460 mm^3).
-     - Radius 7.0 mm (dia 14.0 mm): 8.889046 mm^3 (retention bumps only: 8.8890 mm^3).
-     - Radius 7.5 mm (dia 15.0 mm): 23.091277 mm^3 (retention bumps: 15.7547 mm^3, mount posts: 7.3364 mm^3).
-   - Handles up to 11.6 mm seat freely; 12-15 mm handles press against the retention bumps.
+     - Radius 6.5 mm (dia 13.0 mm): 3.510715 mm^3 (retention bumps only: 3.5107 mm^3).
+     - Radius 7.0 mm (dia 14.0 mm): 58.352785 mm^3 (retention bumps only: 58.3528 mm^3).
+     - Radius 7.5 mm (dia 15.0 mm): 131.252193 mm^3 (retention bumps: 104.14 mm^3, mount posts: 27.11 mm^3).
+   - "Handles up to 11.6 mm seat freely; 12-15 mm handles press against the retention bumps."
+
+5. Inner Floor Profile (z at r = 0, 5, 8, 11, 15, 20, 25 mm):
+   - r =  0 mm: z = 4.191 mm (>= 3.5 mm)
+   - r =  5 mm: z = 3.500 mm (>= 3.5 mm)
+   - r =  8 mm: z = 3.504 mm (>= 3.5 mm)
+   - r = 11 mm: z = 4.253 mm (>= 3.5 mm)
+   - r = 15 mm: z = 4.107 mm (>= 3.5 mm)
+   - r = 20 mm: z = 8.359 mm (>= 3.5 mm)
+   - r = 25 mm: z = 10.524 mm (>= 3.5 mm)
+   - Floor profile shows smooth continuous texture across all radii with no flat bald ring.
+
+6. Thinnest Wall with Texture:
+   - Measured minimum wall: 3.867 mm (Requirement >= 3.5 mm: PASS).
+
+7. Line-2 Stroke Width Analysis ("Travel Shaving Bowl"):
+   - Total text area: 130.058 mm^2
+   - Area fraction with stroke >= 0.8 mm: 98.27% (Requirement >= 90%: PASS).
 
 RELEASE GATING OUTCOME
-- All v3 acceptance requirements met:
-  1. Generic razor head render updated to 42x9x7 mm lying across shelf.
-  2. Blade drawer detents/endstops overlapped 0.2 mm into body, achieving 1 connected watertight component.
-  3. Shaft clearance 0.000 mm^3 for radii 5.4 and 5.8 mm; radii 6.0-7.5 mm intersection confined to retention bumps and mount posts.
-  4. Tag v3 released and pushed to origin; tag v2 preserved untouched.
+- All acceptance requirements verified and passing.
+- Tag v2 preserved untouched at commit 578dd1dd.
+- Branch v3-update ready for merge into main and annotated v3 tagging.

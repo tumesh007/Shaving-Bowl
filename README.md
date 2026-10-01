@@ -42,9 +42,15 @@ flatpak run org.openscad.OpenSCAD -D 'render_mode="blades_inside"' -o renders/bl
 
 ## Design notes
 
-- The inside and outside bowl profiles are rounded and near-hemispherical, with a flat stable foot and a minimum 3.5 mm center base. Nominal bowl dimensions are `bowl_outer_diameter = 80` mm and `bowl_inner_diameter = 67` mm.
-- The lather surface uses an even, staggered 45-degree diamond/drum pattern with softened ridges, shallow broad seeded undulations, and subdued connecting channels. Its outer 5.5 mm fades smoothly into the bowl wall; the relief is limited to about 4.5 mm peak-to-valley rather than the previous deep, uneven craters.
+- The inside and outside bowl profiles are rounded and near-hemispherical, with a stable 45-degree conical base footprint ($r \ge 20$ mm at $z = 0.3$ mm) and a minimum 3.5 mm center floor. Nominal bowl dimensions are `bowl_outer_diameter = 84` mm, `bowl_inner_diameter = 73.7` mm, and `bowl_height = 38.5` mm.
+- The lather surface uses an even, staggered 45-degree diamond/drum pattern with softened ridges, shallow broad seeded undulations, and subdued connecting channels. Its outer 5.5 mm fades smoothly into the bowl wall; the relief is limited to about 4.5 mm peak-to-valley rather than deep, uneven craters.
 - The razor cradle is open upward, fits the target 8–15 mm handle range, includes rounded retaining bumps and through-drainage ports, and does not drain into blade storage. Handles up to 11.6 mm seat freely; 12-15 mm handles press against the retention bumps. A vertical elevation `dock_raise = 8` mm lifts the entire dock, retention bumps, head shelf, and mount posts above the handle shell. A half-round head shelf supports the assembled razor head, with a U-shaped neck slot, curved-edge retention lip, and drain gap.
+- Overhang-safe design (`overhang_safe = true`): implements self-supporting geometry complying with the 45-degree rule ($dz/dr \ge 1.0$), reducing steep overhang area below 2,000 mm² ($1,964.87$ mm² measured). Features include:
+  - 45° conical base transition meeting the sphere tangentially, providing a wide $\ge 21.5$ mm bed footprint that eliminates spherical bottom overhangs.
+  - Dock support gussets (`gusset_start = 2.0`, `gusset_drop = 12.0`) bracing the cradle and mount posts down to the handle.
+  - 45° inverted conical under-plate (`head_rest_lower_plate()`) with a 0.5 mm perimeter inset supporting the head shelf without non-manifold edge artifacts.
+  - 45° pitched ceiling on the handle grip cutout and a 54° lower handle junction taper directly to the base.
+  - The only overhang $> 500$ mm² is the straight 27 mm drawer vault ceiling bridge at $z \approx 10.7$ mm ($1,286.64$ mm²), which prints cleanly without supports via standard straight bridging.
 - Razor head-rest parameters: `head_rest_radius=24`, `head_rest_thickness=3.5`, `head_rest_rim_height=1.6`, `head_rest_rim_width=1.6`, `head_rest_gap=3`, `head_rest_flat_edge=6`, `neck_slot_radius=6.5`, and `head_rest_drain_gap=5` (all dimensions in mm).
 - `razor_dock_test.stl` includes the shelf, with its 8, 10, 12, and 15 mm dock samples spaced 54 mm apart.
 - Print razor_dock_test with your real razor first; adjust head_rest_gap and neck_slot_radius to your razor's neck.

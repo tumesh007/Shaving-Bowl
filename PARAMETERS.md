@@ -9,9 +9,9 @@ overrides when exporting.
 
 | Parameter | Default | Purpose |
 | --- | ---: | --- |
-| `bowl_outer_diameter` | 80 | Rounded outside diameter |
-| `bowl_inner_diameter` | 67 | Inside diameter and texture boundary |
-| `bowl_height` | 35 | Rim height from the stable base |
+| `bowl_outer_diameter` | 84 | Rounded outside diameter |
+| `bowl_inner_diameter` | 73.7 | Inside diameter and texture boundary |
+| `bowl_height` | 38.5 | Rim height from the stable base (stays $\ge \text{inner\_radius} + 1.5$ mm) |
 | `base_thickness` | 3.5 | Minimum floor thickness at the center |
 
 The inside and outside curves are generated as near-hemispherical profiles
@@ -59,6 +59,9 @@ seeded terrain blends into the diamonds without forming isolated deep craters.
 | `razor_handle_clearance` | 1.0 | Cradle fit allowance |
 | `razor_dock_wall` | 3.0 | Cradle wall thickness |
 | `dock_raise` | 8 | Vertical dock elevation above rim reference level |
+| `overhang_safe` | `true` | Enable 45-degree self-supporting geometry (conical base, gussets, pitched cutouts) |
+| `gusset_start` | 2.0 | Dock support gusset offset from cradle mount post |
+| `gusset_drop` | 12.0 | Vertical drop distance for 45-degree cradle support gussets down to handle |
 
 ## Razor head rest
 
