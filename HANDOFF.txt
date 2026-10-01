@@ -86,4 +86,5 @@ VALIDATION MEASUREMENTS
 RELEASE GATING OUTCOME
 - All acceptance requirements verified and passing.
 - Tag v2 preserved untouched at commit 578dd1dd.
-- Branch v3-update ready for merge into main and annotated v3 tagging.
+- Tag v3 preserved at commit 51bd3e34.
+- Tag v4 released on main with 45-degree overhang-safe geometry and 84 mm resized bowl.
