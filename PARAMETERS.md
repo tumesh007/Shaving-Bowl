@@ -89,8 +89,8 @@ seeded terrain blends into the diamonds without forming isolated deep craters.
 
 | Parameter | Default | Purpose |
 | --- | ---: | --- |
-| `de_blade_length` | 43 | Standard DE blade length |
-| `de_blade_width` | 22 | Standard DE blade width |
+| `de_blade_length` | 56 | Standard tuck length (adjust for drawer size) |
+| `de_blade_width` | 28 | Standard tuck width |
 | `de_blade_thickness` | 0.25 | Single-blade thickness |
 | `blade_clearance` | 0.5 | Blade fit allowance |
 | `blade_storage_count` | 5 | Preview stack capacity |
