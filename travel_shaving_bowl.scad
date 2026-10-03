@@ -330,23 +330,39 @@ module handle_junctions() {
 
 module handle() {
     difference() {
-        translate([grip_center_x(), 0, grip_center_z()])
-            rounded_box([handle_projection + 7, handle_width, grip_height()], handle_fillet_radius, rounded_fn);
+        union() {
+            translate([grip_center_x(), 0, grip_center_z()])
+                rounded_box([handle_projection + 7, handle_width, grip_height()], handle_fillet_radius, rounded_fn);
+            
+            // Solid merger between handle and dock to bridge the visual gap
+            if (overhang_safe) {
+                hull() {
+                    // Small cube at the BACK of the dock (far from the razor shaft)
+                    translate([outer_radius + 12.0, 0, bowl_height - 1 + dock_raise - 1.5])
+                        cube([4, handle_width - 4, 4], center=true);
+                    // Top outer rim of the handle
+                    translate([grip_center_x() + (handle_projection + 7)/2 - 3, 0, grip_center_z() + grip_height()/2 - 3])
+                        cube([6, handle_width, 6], center=true);
+                }
+            }
+        }
+        
         if (!overhang_safe) {
             translate([grip_center_x() + 0.8, 0, grip_center_z() + 1.2])
                 rounded_box([handle_projection - 2, handle_width + 2, max(8, grip_height() - 10)], 3, rounded_fn);
         } else {
-            // Cutout with 45-degree pitched roof to eliminate horizontal ceiling
+            // Original v6 sloped cutout in Y only
             translate([grip_center_x() + 0.8, 0, grip_center_z() + 1.2])
                 hull() {
-                    rounded_box([handle_projection - 2, handle_width + 2, max(8, grip_height() - 10) - 8], 3, rounded_fn);
-                    translate([0, 0, (max(8, grip_height() - 10) - 8)/2 + (handle_projection - 2)/2 - 1.5])
-                        rotate([90, 0, 0])
-                            cylinder(h=handle_width + 2, r=1.5, center=true, $fn=rounded_fn);
+                    translate([0, 0, max(8, grip_height() - 10)/2])
+                        cube([handle_projection - 2, handle_width + 2, 0.1], center=true);
+                    translate([0, 0, -max(8, grip_height() - 10)/2])
+                        cube([handle_projection - 2, 0.1, 0.1], center=true);
                 }
         }
     }
 }
+
 
 // ---------- Open-top angled safety-razor cradle ----------
 function dock_inner_r(diameter) = diameter / 2 + razor_handle_clearance;
