@@ -19,13 +19,14 @@ complete_width_with_handle = 105;
 
 // ---------- Height-field surface ----------
 preview_mode = true;
-preview_texture_resolution = 1.6;
-export_texture_resolution = 0.8;
+preview_texture_resolution = 0.6;
+export_texture_resolution = 0.25;           // rule: grid <= (diamond_width + diamond_spacing) / 10
 texture_seed = 4217;
 texture_resolution = preview_mode ? preview_texture_resolution : export_texture_resolution;
-diamond_length = 8;
-diamond_width = 5;
-diamond_spacing = 2;
+diamond_scale = 0.4;                        // 1.0 = v4 size (8 x 5 mm); 0.4 = 60% smaller
+diamond_length = 8 * diamond_scale;
+diamond_width = 5 * diamond_scale;
+diamond_spacing = max(0.8, 2 * diamond_scale);   // gap stays >= 0.8 mm for a 0.4 mm nozzle
 diamond_ridge_height = 1.15;
 diamond_channel_depth = 0.65;
 diamond_height_variation = 0.04;

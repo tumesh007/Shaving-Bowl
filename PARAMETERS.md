@@ -26,12 +26,13 @@ not use those three parameters as direct geometry inputs.
 | Parameter | Default | Purpose |
 | --- | ---: | --- |
 | `preview_mode` | `true` | Faster, coarser interactive model |
-| `preview_texture_resolution` | 1.6 | Preview height-field grid spacing |
-| `export_texture_resolution` | 0.8 | STL height-field grid spacing |
+| `preview_texture_resolution` | 0.6 | Preview height-field grid spacing |
+| `export_texture_resolution` | 0.25 | STL height-field grid spacing (rule: $\le$ (`diamond_width` + `diamond_spacing`) / 10) |
 | `texture_seed` | 4217 | Repeatable deterministic feature layout |
-| `diamond_length` | 8 | Rhombus pitch along the long axis |
-| `diamond_width` | 5 | Rhombus pitch along the short axis |
-| `diamond_spacing` | 2 | Gap between repeated rhombi |
+| `diamond_scale` | 0.4 | Uniform scale factor: 1.0 = v4 size (8 × 5 mm); smaller = denser pattern |
+| `diamond_length` | 8 × `diamond_scale` | Rhombus pitch along the long axis |
+| `diamond_width` | 5 × `diamond_scale` | Rhombus pitch along the short axis |
+| `diamond_spacing` | max(0.8, 2 × `diamond_scale`) | Gap between repeated rhombi (≥ 0.8 mm for a 0.4 mm nozzle) |
 | `diamond_ridge_height` | 1.15 | Raised drum-feature amplitude |
 | `diamond_channel_depth` | 0.65 | Recessed channel amplitude |
 | `diamond_height_variation` | 0.04 | Small seeded feature variation |
@@ -41,6 +42,14 @@ not use those three parameters as direct geometry inputs.
 | `macro_valley_scale` | 0.45 | Broad-valley contribution |
 | `major_groove_scale` | 0.4 | Sparse broad-groove contribution |
 | `outer_smooth_width` | 5.5 | Texture fade into the wall |
+
+### Diamond scale reference
+
+| `diamond_scale` | Diamond size (mm) | Spacing (mm) | Approx. count (r < 30 mm) | Recommended `export_texture_resolution` |
+| ---: | ---: | ---: | ---: | ---: |
+| 0.5 | 4.0 × 2.5 | 1.0 | ~320 | 0.35 |
+| 0.4 | 3.2 × 2.0 | 0.8 | ~500 | 0.25 |
+| 0.375 | 3.0 × 1.875 | 0.8 | ~570 | 0.25 |
 
 The softened staggered rhombus field is the primary texture. Low-amplitude
 seeded terrain blends into the diamonds without forming isolated deep craters.
@@ -128,7 +137,6 @@ Set `part` to one of:
 - `texture_test`
 - `razor_dock_test`
 - `blade_storage_test`
-- `handle_strength_test`
 - `emboss_test` — exterior-wall patch for checking raised lettering
 
 Set `preview_mode=false` for finer STL exports. See the README for complete

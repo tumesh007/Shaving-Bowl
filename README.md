@@ -14,7 +14,6 @@ See the [`renders/`](renders/) gallery for top, side, bottom, texture close-up, 
 - `texture_test_coupon.stl` — 40 × 40 mm terrain and diamond-pattern coupon.
 - `razor_dock_test.stl` — cradle and half-round head-shelf samples for 8, 10, 12, and 15 mm handles, spaced 54 mm apart.
 - `blade_storage_test.stl` — drawer samples with 1, 3, and 5 dummy blades.
-- `handle_strength_test.stl` — grip, attachment pads, blade vault, and dock assembly.
 - `emboss_test.stl` — curved exterior-wall patch for checking the raised name before printing the full bowl.
 - `fonts/Pacifico-Regular.ttf` and `fonts/OFL.txt` — bundled Pacifico font and SIL Open Font License.
 - `renders/` — isometric, orthographic, section, close-up, storage, shelf, and name previews.
@@ -29,11 +28,10 @@ flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="blade_drawer
 flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="texture_test"' -o texture_test_coupon.stl travel_shaving_bowl.scad
 flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="razor_dock_test"' -o razor_dock_test.stl travel_shaving_bowl.scad
 flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="blade_storage_test"' -o blade_storage_test.stl travel_shaving_bowl.scad
-flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="handle_strength_test"' -o handle_strength_test.stl travel_shaving_bowl.scad
 flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="emboss_test"' -o emboss_test.stl travel_shaving_bowl.scad
 ```
 
-The top-level `part` selector supports `assembly`, `bowl`, `bowl_shell`, `blade_drawer`, `texture_test`, `razor_dock_test`, `blade_storage_test`, `handle_strength_test`, and `emboss_test`. Use `part="assembly"` for inspection only; export the body and drawer separately. `render_mode` supports `top`, `side`, `bottom`, `texture_closeup`, `texture_section`, `handle_section`, `blade_section`, `razor_parked`, and `blades_inside`. For example:
+The top-level `part` selector supports `assembly`, `bowl`, `bowl_shell`, `blade_drawer`, `texture_test`, `razor_dock_test`, `blade_storage_test`, and `emboss_test`. Use `part="assembly"` for inspection only; export the body and drawer separately. `render_mode` supports `top`, `side`, `bottom`, `texture_closeup`, `texture_section`, `handle_section`, `blade_section`, `razor_parked`, and `blades_inside`. For example:
 
 ```sh
 flatpak run org.openscad.OpenSCAD -D 'render_mode="blade_section"' -o renders/blade-section.png travel_shaving_bowl.scad
@@ -43,9 +41,9 @@ flatpak run org.openscad.OpenSCAD -D 'render_mode="blades_inside"' -o renders/bl
 ## Design notes
 
 - The inside and outside bowl profiles are rounded and near-hemispherical, with a stable 45-degree conical base footprint ($r \ge 20$ mm at $z = 0.3$ mm) and a minimum 3.5 mm center floor. Nominal bowl dimensions are `bowl_outer_diameter = 84` mm, `bowl_inner_diameter = 73.7` mm, and `bowl_height = 38.5` mm.
-- The lather surface uses an even, staggered 45-degree diamond/drum pattern with softened ridges, shallow broad seeded undulations, and subdued connecting channels. Its outer 5.5 mm fades smoothly into the bowl wall; the relief is limited to about 4.5 mm peak-to-valley rather than deep, uneven craters.
+- The lather surface uses a dense, staggered 45-degree diamond/drum pattern (`diamond_scale = 0.4`, giving 3.2 × 2.0 mm diamonds with 0.8 mm gaps) with softened ridges, shallow broad seeded undulations, and subdued connecting channels. Its outer 5.5 mm fades smoothly into the bowl wall; the relief is limited to about 4.5 mm peak-to-valley rather than deep, uneven craters.
 - The razor cradle is open upward, fits the target 8–15 mm handle range, includes rounded retaining bumps and through-drainage ports, and does not drain into blade storage. Handles up to 11.6 mm seat freely; 12-15 mm handles press against the retention bumps. A vertical elevation `dock_raise = 8` mm lifts the entire dock, retention bumps, head shelf, and mount posts above the handle shell. A half-round head shelf supports the assembled razor head, with a U-shaped neck slot, curved-edge retention lip, and drain gap.
-- Overhang-safe design (`overhang_safe = true`): implements self-supporting geometry complying with the 45-degree rule ($dz/dr \ge 1.0$), reducing steep overhang area below 2,000 mm² ($1,964.87$ mm² measured). Features include:
+- Mostly self-supporting design (`overhang_safe = true`); remaining overhangs: 27 mm flat drawer ceiling bridge (1,287 mm²), dock underside (231 mm²), shelf tip (156 mm²). Features include:
   - 45° conical base transition meeting the sphere tangentially, providing a wide $\ge 21.5$ mm bed footprint that eliminates spherical bottom overhangs.
   - Dock support gussets (`gusset_start = 2.0`, `gusset_drop = 12.0`) bracing the cradle and mount posts down to the handle.
   - 45° inverted conical under-plate (`head_rest_lower_plate()`) with a 0.5 mm perimeter inset supporting the head shelf without non-manifold edge artifacts.
@@ -63,7 +61,7 @@ flatpak run org.openscad.OpenSCAD -D 'render_mode="blades_inside"' -o renders/bl
 
 ## Mesh verification
 
-The production body, separate drawer, four functional test meshes, and emboss
+The production body, separate drawer, three functional test meshes, and emboss
 patch were exported with OpenSCAD. `travel_shaving_bowl.stl` and
 `emboss_test.stl` are watertight single-component meshes; the dock test has
 four watertight, separated samples. Trimesh reports all exported meshes
