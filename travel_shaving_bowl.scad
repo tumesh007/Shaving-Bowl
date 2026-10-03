@@ -478,6 +478,49 @@ module dock_pillar() {
     }
 }
 
+
+module final_merged_handle() {
+    difference() {
+        union() {
+            // Smoothly merged bridge from dock to pillar
+            hull() {
+                // Back sphere of the dock
+                translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
+                    rotate([0, 90 - razor_dock_angle, 0])
+                        translate([0, 0, dock_length()]) 
+                            sphere(r=dock_outer_r(razor_handle_max_diameter)-1, $fn=rounded_fn*2);
+                // Top of the vertical pillar
+                translate([outer_radius + 27.0, 0, bowl_height - 1 + dock_raise + 2])
+                    rounded_box([6, handle_width, 6], 2, rounded_fn);
+            }
+            // Vertical pillar dropping to the vault roof with cylindrical base
+            hull() {
+                translate([outer_radius + 27.0, 0, bowl_height - 1 + dock_raise + 2])
+                    rounded_box([6, handle_width, 6], 2, rounded_fn);
+                
+                // Cylindrical base at vault roof to smoothen and strengthen
+                translate([outer_radius + 25.0, 0, vault_height() + 4])
+                    rotate([90, 0, 0])
+                        cylinder(h=handle_width, r=6, center=true, $fn=rounded_fn);
+            }
+        }
+        // --- CUTOUTS ---
+        // 1. Extended cutout to ensure razor shaft is clear
+        translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
+            rotate([0, 90 - razor_dock_angle, 0])
+                translate([0, 0, -100])
+                    cylinder(h=200, r=dock_inner_r(razor_handle_max_diameter), $fn=rounded_fn*2);
+        
+        // 2. Re-apply the dock's up-facing opening so we don't accidentally fill it!
+        translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
+            rotate([0, 90 - razor_dock_angle, 0]) {
+                // Up-facing opening
+                translate([-dock_outer_r(razor_handle_max_diameter)-2, 0, dock_length()/2])
+                    cube([2*(dock_outer_r(razor_handle_max_diameter)+1), 4*dock_outer_r(razor_handle_max_diameter), dock_length()+2*dock_outer_r(razor_handle_max_diameter)+2], center=true);
+            }
+    }
+}
+
 module razor_dock_assembly() {
     union() {
         razor_dock();
@@ -485,7 +528,7 @@ module razor_dock_assembly() {
         razor_support_mounts();
         razor_head_support();
         if (overhang_safe)
-            dock_gussets(); dock_pillar();
+            dock_gussets(); final_merged_handle();
     }
 }
 
@@ -655,8 +698,6 @@ module bowl_body() {
     difference() {
         union() {
             bowl_shell();
-            handle_junctions();
-            handle();
             blade_storage_shell();
             razor_dock_assembly();
             name_emboss();
