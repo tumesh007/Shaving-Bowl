@@ -82,14 +82,14 @@ emboss_sink = 0.4;
 emboss_max_half_width = 25;
 
 // ---------- Captive DE blade drawer ----------
-de_blade_length = 43;
-de_blade_width = 22;
-de_blade_thickness = 0.25;
+de_blade_length = 56;
+de_blade_width = 28;
+de_blade_thickness = 10.0;
 blade_clearance = 0.5;
-blade_storage_count = 5;
+blade_storage_count = 1;
 drawer_wall = 1.2;
 drawer_clearance = 0.3;
-drawer_open_travel = 11.9;
+drawer_open_travel = 45.0;
 drawer_pull_width = 12;
 drawer_pull_height = 5;
 drawer_pull_projection = 4;
@@ -482,14 +482,14 @@ module razor_dock_assembly() {
 // ---------- Dry blade vault and sliding tray ----------
 function vault_center_x() = grip_center_x() + 2.5;
 function vault_center_y() = 0;
-function vault_width() = 30;
-function vault_length() = 52;
-function vault_height() = 13;
+function vault_width() = 36;
+function vault_length() = 65;
+function vault_height() = 17;
 function drawer_inner_width() = de_blade_width + 2*blade_clearance;
 function drawer_outer_width() = drawer_inner_width() + 2*drawer_wall;
 function drawer_inner_length() = de_blade_length + 2*blade_clearance;
 function drawer_outer_length() = drawer_inner_length() + 2*drawer_wall;
-function drawer_outer_height() = 6.8;
+function drawer_outer_height() = 12.0;
 function drawer_center_y(open=false) =
     vault_center_y()
     + (open ? min(drawer_open_travel, drawer_stop_travel()) : 0);
@@ -498,10 +498,10 @@ function drawer_cavity_width() = drawer_outer_width() + 2*drawer_clearance;
 function drawer_cavity_length() = drawer_outer_length() + 2*drawer_clearance;
 function drawer_front_closed_y() = drawer_center_y(false) + drawer_outer_length()/2;
 function vault_front_y() = vault_center_y() + vault_length()/2;
-function drawer_channel_start_y() = drawer_center_y(false) + 12.0;
+function drawer_channel_start_y() = drawer_center_y(false) - 21.0;
 function drawer_channel_end_y() = vault_front_y() - 2.2;
 function drawer_stop_travel() =
-    drawer_channel_end_y() - 0.9 - drawer_center_y(false) - 13.0;
+    drawer_channel_end_y() - 0.9 - drawer_center_y(false) - (-20.0);
 function drawer_tab_z() = drawer_z() + 1.9;
 function drawer_tab_x() = drawer_outer_width()/2 + drawer_endstop_overlap;
 
@@ -513,7 +513,7 @@ module blade_storage_shell() {
 module blade_vault_void() {
     cavity_w = drawer_cavity_width();
     cavity_l = drawer_cavity_length();
-    cavity_h = 7.8;
+    cavity_h = 13.0;
     cavity_front_y = drawer_center_y(false) + cavity_l/2;
     passage_length = vault_front_y() - cavity_front_y + 2.0;
     passage_center_y = (vault_front_y() + cavity_front_y)/2 + 1.0;
@@ -560,7 +560,7 @@ module blade_drawer_endstop() {
     for (side = [-1, 1])
         translate([vault_center_x() + side*(drawer_outer_width()/2
                                              + (drawer_endstop_overlap - 0.2)/2),
-                   drawer_center_y(drawer_open) + 13.0, drawer_tab_z()])
+                   drawer_center_y(drawer_open) - 20.0, drawer_tab_z()])
             rounded_box([drawer_endstop_overlap + 0.2, 1.8, 2.4], 0.4, rounded_fn);
 }
 

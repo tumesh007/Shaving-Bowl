@@ -50,16 +50,17 @@ def add_body(with_drawer=True, open_drawer=False, blades=False):
     if with_drawer:
         drawer = import_mesh(DRAWER, "Separate sliding drawer", DRAWER_MAT)[0]
         if open_drawer:
-            drawer.location.y += 9.9
+            drawer.location.y += 45.0
     if blades:
-        for index in range(5):
-            bpy.ops.mesh.primitive_cube_add(size=1, location=(
-                53.5, 0.0, 4.825 + index * 0.37))
-            blade = bpy.context.object
-            blade.name = "Illustrative DE blade"
-            blade.dimensions = (21.6, 42.6, 0.25)
-            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-            blade.data.materials.append(BLADE_MAT)
+        # Generate a single tuck block
+        y_loc = 45.0 if open_drawer else 0.0
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(
+            55.5, y_loc, 8.8))
+        blade = bpy.context.object
+        blade.name = "Illustrative DE blade"
+        blade.dimensions = (28.0, 56.0, 10.0)
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        blade.data.materials.append(BLADE_MAT)
     return body, drawer
 
 
