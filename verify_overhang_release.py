@@ -1,8 +1,9 @@
 import trimesh
 import numpy as np
+import sys
 
 def run():
-    stl_path = '/home/pnb/repos/Shaving-Bowl/travel_shaving_bowl.stl'
+    stl_path = sys.argv[1] if len(sys.argv) > 1 else './travel_shaving_bowl.stl'
     print(f"Loading {stl_path}...")
     mesh = trimesh.load(stl_path)
     if isinstance(mesh, trimesh.Scene):
@@ -132,7 +133,7 @@ def run():
 
     def diamond_texture(x, y):
         u, v = (x + y) * 0.70710678, (x - y) * 0.70710678
-        pitch_u, pitch_v = 10.0, 7.0
+        pitch_u, pitch_v = 4.0, 2.8    # diamond_length + spacing = 3.2 + 0.8, diamond_width + spacing = 2.0 + 0.8
         row = np.floor(v / pitch_v + 0.5)
         v_local = (v - row * pitch_v) / (pitch_v / 2.0)
         u_staggered = u - 0.12 * pitch_u * np.cos(np.radians(180.0 * v / pitch_v))
