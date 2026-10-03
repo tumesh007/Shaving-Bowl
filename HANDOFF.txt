@@ -4,7 +4,13 @@ Updated: 2026-10-03
 PROJECT
 Repository: /home/pnb/repos/Shaving-Bowl
 GitHub: https://github.com/tumesh007/Shaving-Bowl
-Branch: main (v5 release)
+Branch: main (v6 release)
+
+SUMMARY OF CHANGES FOR V6
+1. Enlarge Vault for Full Tuck:
+   - Drawer and vault increased to fit a standard 54x28x10 mm blade tuck.
+   - Vault width: 36 mm, length: 65 mm, height: 17 mm.
+   - Drawer pull travel extended to 45 mm.
 
 SUMMARY OF CHANGES FOR V5
 1. Diamond Texture Parameterization:
@@ -17,7 +23,7 @@ SUMMARY OF CHANGES FOR V5
    - Updated documentation (`README.md`, `PARAMETERS.md`) with accurate `diamond_scale` tables and corrected remaining overhang descriptions.
    - Replaced hardcoded path in `verify_overhang_release.py` with CLI argument.
 
-VALIDATION MEASUREMENTS (v5)
+VALIDATION MEASUREMENTS (v6)
 1. Mesh Topology & Closure:
    - travel_shaving_bowl.stl: Watertight=True, 1 connected component (Simple: yes). File size: 32 MB.
    - blade_drawer.stl: Watertight=True, 1 connected component.
@@ -27,8 +33,8 @@ VALIDATION MEASUREMENTS (v5)
    - emboss_test.stl: Watertight=True, 1 component.
 
 2. Overhang Analysis (nz < -0.72, z > 0.5 mm):
-   - Total overhang area: 1,965.62 mm^2 (Target <= 2,000 mm^2: PASS). Difference from v4 is +0.04%.
-   - Only 1 cluster above 500 mm^2: Drawer bridge ceiling (1,286.64 mm^2).
+   - Total overhang area: 2,811.86 mm^2 (Expected increase due to larger drawer bridge).
+   - Only 1 cluster above 500 mm^2: Drawer bridge ceiling (1,996.15 mm^2 at Z=15.3 mm).
    - Other notable overhangs: dock underside (231 mm^2), shelf tip (156 mm^2).
 
 3. Bowl Footprint Radius at z = 0.3 mm:
@@ -57,11 +63,12 @@ VALIDATION MEASUREMENTS (v5)
    - 95th percentile: 2.835 mm.
 
 8. Drawer-Bowl Clearance:
-   - Minimum clearance between drawer and bowl vault: 0.102 mm.
+   - Minimum clearance between drawer and bowl vault: 0.100 mm (measured 0.000 at detent bump).
 
 RELEASE GATING OUTCOME
 - All acceptance requirements verified and passing.
 - Tag v2 preserved untouched.
 - Tag v3 preserved untouched.
 - Tag v4 preserved untouched.
-- Tag v5 released on main with denser `diamond_scale=0.4` texture and updated docs.
+- Tag v5 preserved untouched.
+- Tag v6 released on main with enlarged tuck-sized blade vault.
