@@ -528,7 +528,7 @@ module razor_dock_assembly() {
         razor_support_mounts();
         razor_head_support();
         if (overhang_safe)
-            dock_gussets(); final_merged_handle();
+            final_merged_handle();
     }
 }
 
