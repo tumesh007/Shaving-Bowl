@@ -524,7 +524,7 @@ module final_merged_handle() {
 module razor_dock_assembly() {
     union() {
         razor_dock();
-        razor_retention();
+        
         razor_support_mounts();
         razor_head_support();
         if (overhang_safe)
