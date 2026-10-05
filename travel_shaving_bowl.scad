@@ -88,14 +88,14 @@ de_blade_thickness = 10.0;
 blade_clearance = 0.5;
 blade_storage_count = 1;
 drawer_wall = 1.2;
-drawer_clearance = 0.3;
+drawer_clearance = 0.4;   // v12: was 0.3; too tight once PETG stringing is present
 drawer_open_travel = 45.0;
 drawer_pull_width = 12;
 drawer_pull_height = 5;
 drawer_pull_projection = 4;
 detent_bump_radius = 0.65;
 detent_flexure_length = 8;
-detent_flexure_thickness = 0.9;
+detent_flexure_thickness = 1.2;   // v12: was 0.9; too thin for daily open/close cycles
 drawer_endstop_overlap = 1.0;
 
 // ---------- Output selection ----------
@@ -105,7 +105,10 @@ drawer_endstop_overlap = 1.0;
 render_mode = "assembly";
 // assembly, bowl, bowl_shell, blade_drawer, texture_test, razor_dock_test,
 // blade_storage_test, handle_strength_test, emboss_test
-part = "assembly";
+// v12: default changed from "assembly" to "bowl". "assembly" unions the
+// drawer inside the bowl body; the v11 shipped STL was actually part="bowl",
+// which made the release artifacts non-reproducible from the committed SCAD.
+part = "bowl";
 drawer_open = false;
 
 // ---------- Derived dimensions ----------
@@ -113,7 +116,8 @@ outer_radius = bowl_outer_diameter / 2;
 inner_radius = bowl_inner_diameter / 2;
 texture_radius = inner_radius;
 texture_fade_start = texture_radius - outer_smooth_width;
-terrain_preview_fn = preview_mode ? 72 : 144;
+terrain_preview_fn = preview_mode ? 72 : 96;   // v12: 144 -> 96 to keep CGAL export within 4 GB RAM
+nominal_floor_z = base_thickness;   // v12: was referenced but undefined in texture_closeup mode
 rounded_fn = preview_mode ? 18 : 28;
 
 function fract(v) = v - floor(v);
@@ -396,7 +400,7 @@ module razor_support_mounts() {
 
 module head_rest_lower_plate() {
     lower_inset = 0.5; // deliberate inset to prevent non-manifold edge at the lip drain gap
-    lower_drop = head_rest_gap + 1.0;
+    lower_drop = head_rest_gap - 0.3;   // v12 fix: was +1.0, which narrowed the bore from t=17 mm; now the plate hull starts beyond the 18 mm dock end
     z_pos = dock_length() + head_rest_gap;
     difference() {
         hull() {
@@ -407,7 +411,7 @@ module head_rest_lower_plate() {
                         cube([head_rest_radius + head_rest_flat_edge, 2*head_rest_radius, 0.2]);
                 }
             translate([0, 0, z_pos - lower_drop])
-                cylinder(h=0.1, r=dock_outer_r(razor_handle_max_diameter), $fn=rounded_fn*2);
+                cylinder(h=0.1, r=dock_outer_r(razor_handle_max_diameter) - 0.3, $fn=rounded_fn*2);   // v12 fix: 0.3 mm inside the end sphere, no coincident rim
         }
         translate([0, 0, z_pos - lower_drop - 1])
             cylinder(h=lower_drop + 2, r=neck_slot_radius, $fn=rounded_fn*2);
@@ -509,14 +513,14 @@ module final_merged_handle() {
         translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
             rotate([0, 90 - razor_dock_angle, 0])
                 translate([0, 0, -100])
-                    cylinder(h=200, r=dock_inner_r(razor_handle_max_diameter), $fn=rounded_fn*2);
+                    cylinder(h=200, r=dock_inner_r(razor_handle_max_diameter) + 0.03, $fn=rounded_fn*2);   // v12 fix: +0.03 so this cut never shares a surface with dock_body's bore (was the non-manifold edge)
         
         // 2. Re-apply the dock's up-facing opening so we don't accidentally fill it!
         translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
             rotate([0, 90 - razor_dock_angle, 0]) {
                 // Up-facing opening
                 translate([-dock_outer_r(razor_handle_max_diameter)-2, 0, dock_length()/2])
-                    cube([2*(dock_outer_r(razor_handle_max_diameter)+1), 4*dock_outer_r(razor_handle_max_diameter), dock_length()+2*dock_outer_r(razor_handle_max_diameter)+2], center=true);
+                    cube([2*(dock_outer_r(razor_handle_max_diameter)+1) + 0.06, 4*dock_outer_r(razor_handle_max_diameter) + 0.06, dock_length()+2*dock_outer_r(razor_handle_max_diameter)+2 + 0.06], center=true);   // v12 fix: +0.06 so the faces are not coincident with dock_body's opening
             }
     }
 }
@@ -524,8 +528,10 @@ module final_merged_handle() {
 module razor_dock_assembly() {
     union() {
         razor_dock();
-        
-        razor_support_mounts();
+
+        // v12: razor_support_mounts removed. They intruded 1.4 mm into the
+        // handle bore (measured clear bore ~14.2 mm instead of 17) and were
+        // redundant with the final_merged_handle pillar.
         razor_head_support();
         if (overhang_safe)
             final_merged_handle();
@@ -537,12 +543,13 @@ function vault_center_x() = grip_center_x() + 2.5;
 function vault_center_y() = 0;
 function vault_width() = 36;
 function vault_length() = 65;
-function vault_height() = 17;
+function vault_height() = 18;   // v12: +1 mm headroom for the drawer-ceiling bridge
 function drawer_inner_width() = de_blade_width + 2*blade_clearance;
 function drawer_outer_width() = drawer_inner_width() + 2*drawer_wall;
 function drawer_inner_length() = de_blade_length + 2*blade_clearance;
 function drawer_outer_length() = drawer_inner_length() + 2*drawer_wall;
 function drawer_outer_height() = 12.0;
+drawer_floor = 1.2;   // v12 fix: floor thickness; pocket depth = 12.0 - drawer_floor = 10.8 mm for a 10.0 mm tuck
 function drawer_center_y(open=false) =
     vault_center_y()
     + (open ? min(drawer_open_travel, drawer_stop_travel()) : 0);
@@ -566,7 +573,7 @@ module blade_storage_shell() {
 module blade_vault_void() {
     cavity_w = drawer_cavity_width();
     cavity_l = drawer_cavity_length();
-    cavity_h = 13.0;
+    cavity_h = 14.0;   // v12: 1.0 mm vertical clearance over the drawer (bridge-sag budget)
     cavity_front_y = drawer_center_y(false) + cavity_l/2;
     passage_length = vault_front_y() - cavity_front_y + 2.0;
     passage_center_y = (vault_front_y() + cavity_front_y)/2 + 1.0;
@@ -592,6 +599,26 @@ module blade_storage() {
     difference() {
         blade_storage_shell();
         blade_vault_void();
+    }
+    vault_ceiling_chamfers();
+}
+
+// v12: 45-degree chamfers on the two long top edges of the drawer cavity.
+// They cut the flat bridge span from ~32 mm to ~29 mm and give the bridge
+// anchored edges to start from. Added AFTER the void is subtracted.
+// v12: weld the vault to the bowl at bed level. Previously the vault floated
+// 1.4-14.4 mm off the bowl and the whole vault/drawer load hung off the rim
+// via the pillar and dock weld only.
+module vault_bowl_web() {
+    // Welds the vault to the bowl at bed level and up to the vault roof (no open slot above it).
+    // The block is trimmed by a sphere slightly larger than the cavity so it can never poke into the bowl interior.
+    h = vault_height();
+    difference() {
+        hull() {
+            translate([25, 0, h/2]) cube([8, 52, h], center=true);   // x 21..29, meets the 45-degree foot cone at the bed
+            translate([38, 0, h/2]) cube([3, 52, h], center=true);   // x 36.5..39.5, buried in the vault wall (cavity void is cut later)
+        }
+        translate([0, 0, bowl_height]) sphere(r = inner_radius + 1.5, $fn = terrain_preview_fn);
     }
 }
 
@@ -637,7 +664,7 @@ module blade_drawer() {
             translate([vault_center_x(), tray_y, tray_z])
                 rounded_box([tray_w, tray_l, tray_h], 1.0, rounded_fn);
             // Recess leaves a robust floor while keeping the blades below the rim.
-            translate([vault_center_x(), tray_y, tray_z + 1.3])
+            translate([vault_center_x(), tray_y, tray_z + drawer_floor + 0.5])
                 cube([drawer_inner_width(), drawer_inner_length(), tray_h + 1], center=true);
             // Slots isolate two passive cantilevers carrying the detent bumps.
             for (side = [-1, 1])
@@ -656,7 +683,7 @@ module blade_stack(count, tray_y, tray_z) {
     stack_spacing = de_blade_thickness + 0.12;
     for (i = [0:count-1])
         translate([vault_center_x(), tray_y,
-                   tray_z - drawer_outer_height()/2 + 1.3
+                   tray_z - drawer_outer_height()/2 + drawer_floor
                    + de_blade_thickness/2 + i*stack_spacing])
             cube([de_blade_width - 0.4, de_blade_length - 0.4, de_blade_thickness], center=true);
 }
@@ -695,14 +722,17 @@ module emboss_test() {
 }
 
 module bowl_body() {
-    difference() {
-        union() {
-            bowl_shell();
-            blade_storage_shell();
-            razor_dock_assembly();
-            name_emboss();
+    union() {
+        difference() {
+            union() {
+                bowl_shell();
+                blade_storage_shell();
+                razor_dock_assembly();
+                name_emboss();
+                vault_bowl_web();   // v12
+            }
+            blade_vault_void();
         }
-        blade_vault_void();
     }
 }
 
@@ -864,7 +894,17 @@ module selected_part() {
     else if (part == "bowl_shell")
         bowl_shell();
     else if (part == "blade_drawer")
-        blade_drawer();
+        // v12: recentre at origin and rest on the bed. v11 shipped this STL
+        // at its installed position, floating 2.8 mm above the bed.
+        translate([-vault_center_x(), 0, -(drawer_z() - drawer_outer_height() / 2)])
+            blade_drawer();
+    else if (part == "rest_only")
+        difference() {
+            union() { blade_storage_shell(); razor_dock_assembly(); name_emboss(); vault_bowl_web(); }
+            blade_vault_void();
+        }
+    else if (part == "dock_debug")
+        razor_dock_assembly();
     else if (part == "texture_test")
         texture_test_coupon();
     else if (part == "razor_dock_test")

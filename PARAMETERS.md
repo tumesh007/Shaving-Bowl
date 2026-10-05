@@ -95,14 +95,14 @@ seeded terrain blends into the diamonds without forming isolated deep craters.
 | `blade_clearance` | 0.5 | Blade fit allowance |
 | `blade_storage_count` | 5 | Preview stack capacity |
 | `drawer_wall` | 1.2 | Drawer wall thickness |
-| `drawer_clearance` | 0.3 | Sliding clearance per mating side |
+| `drawer_clearance` | 0.4 | Sliding clearance per mating side |
 | `drawer_open_travel` | 11.9 | Maximum captive travel |
 | `drawer_pull_width` | 12 | Pull-tab width |
 | `drawer_pull_height` | 5 | Pull-tab height |
 | `drawer_pull_projection` | 4 | Pull-tab projection |
 | `detent_bump_radius` | 0.65 | Passive detent bump size |
 | `detent_flexure_length` | 8 | Integral detent flexure length |
-| `detent_flexure_thickness` | 0.9 | Integral detent flexure thickness |
+| `detent_flexure_thickness` | 1.2 | Integral detent flexure thickness |
 | `drawer_endstop_overlap` | 1.0 | Captive stop-tab overlap |
 
 The vault and tray are centered across the handle's middle plane. The bowl,

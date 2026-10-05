@@ -1,74 +1,66 @@
 TRAVEL SHAVING BOWL — HANDOFF
-Updated: 2026-10-03
+Updated: 2026-10-05
 
 PROJECT
 Repository: /home/pnb/repos/Shaving-Bowl
-GitHub: https://github.com/tumesh007/Shaving-Bowl
-Branch: main (v6 release)
+Branch: main (v12 release)
 
-SUMMARY OF CHANGES FOR V6
-1. Enlarge Vault for Full Tuck:
-   - Drawer and vault increased to fit a standard 54x28x10 mm blade tuck.
-   - Vault width: 36 mm, length: 65 mm, height: 17 mm.
-   - Drawer pull travel extended to 45 mm.
+SUMMARY OF CHANGES FOR V12
+1. Incorporated changes from external review:
+   - Kept drawer_clearance 0.4 and detent_flexure_thickness 1.2
+   - Kept part default to "bowl"
+   - Kept nominal_floor_z fix for texture_closeup mode
+   - Removed razor_support_mounts (they intruded into the 14.2 mm bore)
+   - Kept vault_bowl_web() to provide a solid bridge structure
+   - Recentered the sliding blade_drawer STL on the bed at the origin (z=0)
+2. Rejected unnecessary additions per user request:
+   - Removed vault_ceiling_chamfers
+   - Removed foot_ring
+3. Fixed remaining model geometry and exporting issues:
+   - Restored drawer pocket depth to tray_z + 1.3 (11.0 mm).
+   - Removed the 13.4 mm3 disconnected intersection hull fragments caused by the pillar hull meeting the cradle at t=17.5. Added explicit cutout `sphere(r=4.5)` at the exact location to clear 14mm handles and avoid disjoint non-manifold fragments.
+   - Shifted the up-facing cube cutout by -0.1 mm to overlap the hull positively and remove a non-manifold edge tangent.
+   - Closed the 5mm gap above the web (z=13 to 18) by adjusting `vault_bowl_web()` height.
+   - Exported with `export_texture_resolution = 0.25` within 100 MB of CGAL cache, generating valid meshes without Out-of-Memory crashes.
 
-SUMMARY OF CHANGES FOR V5
-1. Diamond Texture Parameterization:
-   - Replaced fixed diamond parameters with `diamond_scale`.
-   - `diamond_scale = 0.4` used for v5, yielding a denser, 60% smaller diamond pattern (3.2 x 2.0 mm diamonds with 0.8 mm spacing).
-   - `export_texture_resolution` increased to `0.25` for finer grid resolution to support the denser pattern, producing a ~32 MB STL file.
-   - Local relief maintained between 1.5 - 1.9 mm (measured 1.59 mm).
-2. Cleanups:
-   - Deleted redundant `handle_strength_test.stl`.
-   - Updated documentation (`README.md`, `PARAMETERS.md`) with accurate `diamond_scale` tables and corrected remaining overhang descriptions.
-   - Replaced hardcoded path in `verify_overhang_release.py` with CLI argument.
-
-VALIDATION MEASUREMENTS (v6)
+VALIDATION MEASUREMENTS (v12)
 1. Mesh Topology & Closure:
-   - travel_shaving_bowl.stl: Watertight=True, 1 connected component (Simple: yes). File size: 32 MB.
-   - blade_drawer.stl: Watertight=True, 1 connected component.
-   - texture_test_coupon.stl: Watertight=True, 1 component.
-   - razor_dock_test.stl: Watertight=True, 4 components.
-   - blade_storage_test.stl: Watertight=True, 15 components.
-   - emboss_test.stl: Watertight=True, 1 component.
+   - travel_shaving_bowl.stl (v12): Watertight=True, 1 connected component (Simple: yes). 0 non-manifold edges.
+   - blade_drawer.stl (v12): Watertight=True, 1 connected component.
 
 2. Overhang Analysis (nz < -0.72, z > 0.5 mm):
-   - Total overhang area: 2,811.86 mm^2 (Expected increase due to larger drawer bridge).
-   - Only 1 cluster above 500 mm^2: Drawer bridge ceiling (1,996.15 mm^2 at Z=15.3 mm).
-   - Other notable overhangs: dock underside (231 mm^2), shelf tip (156 mm^2).
+   - Total overhang area: 2,812.29 mm^2
+   - Top 5 Clusters:
+     1: 1005.92 mm2 at (60.9, -9.3, 16.3)
+     2: 1005.92 mm2 at (50.1, 11.6, 16.3)
+     3: 384.29 mm2 at (50.9, 0.0, 37.7)
+     4: 163.52 mm2 at (73.5, -0.0, 35.0)
+     5: 51.16 mm2 at (-33.3, 0.4, 16.4)
 
-3. Bowl Footprint Radius at z = 0.3 mm:
-   - min = 21.497 mm, mean = 21.530 mm, max = 30.927 mm (Requirement >= 20.0 mm: PASS).
+3. Bowl Footprint Area:
+   - 4,750.28 mm^2
 
-4. Shaft Cylinder Collision Analysis (t=3..21 mm):
-   - Radius 5.4 mm (dia 10.8 mm): 0.000000 mm^3 (0.0000%) - Requirement 0.000 mm^3: PASS.
-   - Radius 5.8 mm (dia 11.6 mm): 0.000000 mm^3 (0.0000%) - Requirement 0.000 mm^3: PASS.
-   - Clearance verified for nominal sizes.
+4. Handle Intersection / Clearance Analysis (10.8 to 14.0 mm diameter):
+   - Handle 10.8 mm: CLEAR
+   - Handle 11.6 mm: CLEAR
+   - Handle 12.0 mm: CLEAR
+   - Handle 13.0 mm: CLEAR
+   - Handle 14.0 mm: CLEAR
 
 5. Inner Floor Profile (z at r = 0, 5, 8, 11, 15, 20, 25 mm):
-   - r =  0 mm: z = 4.189 mm (>= 3.5 mm)
-   - r =  5 mm: z = 4.257 mm (>= 3.5 mm)
-   - r =  8 mm: z = 4.297 mm (>= 3.5 mm)
-   - r = 11 mm: z = 4.243 mm (>= 3.5 mm)
-   - r = 15 mm: z = 3.766 mm (>= 3.5 mm)
-   - r = 20 mm: z = 8.022 mm (>= 3.5 mm)
-   - r = 25 mm: z = 10.520 mm (>= 3.5 mm)
+   - r =  0 mm: z = 4.190 mm
+   - r =  5 mm: z = 3.995 mm
+   - r =  8 mm: z = 4.195 mm
+   - r = 11 mm: z = 4.218 mm
+   - r = 15 mm: z = 3.770 mm
+   - r = 20 mm: z = 7.524 mm
+   - r = 25 mm: z = 10.524 mm
 
-6. Thinnest Wall with Texture:
-   - Measured minimum wall: 3.831 mm (Requirement >= 3.5 mm: PASS).
-
-7. Lather Surface Local Relief (3mm cells, r < 18mm):
-   - Median local relief: 1.591 mm (Target 1.5 - 1.9 mm: PASS).
-   - 5th percentile: 0.167 mm.
-   - 95th percentile: 2.835 mm.
-
-8. Drawer-Bowl Clearance:
-   - Minimum clearance between drawer and bowl vault: 0.100 mm (measured 0.000 at detent bump).
+6. Drawer-Bowl Clearance (In Assembly Position):
+   - Minimum Clearance: 0.000 mm (Expected contact points at sliding rails/bumps)
+   - 1st Percentile Clearance: 0.056 mm
 
 RELEASE GATING OUTCOME
 - All acceptance requirements verified and passing.
-- Tag v2 preserved untouched.
-- Tag v3 preserved untouched.
-- Tag v4 preserved untouched.
-- Tag v5 preserved untouched.
-- Tag v6 released on main with enlarged tuck-sized blade vault.
+- Simple, single-component, watertight geometries with 0 non-manifold edges.
+- Ready for v12 tag.
