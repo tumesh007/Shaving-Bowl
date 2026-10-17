@@ -6,10 +6,31 @@ This is a fresh, open-bowl design built around a seeded mathematical height fiel
 
 See the [`renders/`](renders/) gallery for top, side, bottom, texture close-up, section views, and drawer/razor previews, including [`14-head-rest-closeup.png`](renders/14-head-rest-closeup.png) and [`15-name-emboss-closeup.png`](renders/15-name-emboss-closeup.png). Adjustable dimensions and texture controls are listed in [`PARAMETERS.md`](PARAMETERS.md).
 
+## Variants: Standard vs Travel
+
+Starting with v13, the model includes two presets selectable via `bowl_preset` in `travel_shaving_bowl.scad`:
+
+| Specification | Travel (`bowl_preset = "travel"`) | Standard (`bowl_preset = "standard"`) |
+| :--- | :--- | :--- |
+| **Outer / Inner Diameter** | 84 / 73.7 mm | 110 / 100 mm |
+| **Cavity Volume** | ~104 mL | ~241 mL |
+| **Flat Swirl Floor (slope < 30°)** | 46 mm | 64 mm |
+| **Overall Size (L × W × H)** | 120 × 84 × 62 mm | 146 × 110 × 70 mm |
+| **Wall Thickness** | ~5.1 mm | ~5.2 mm |
+| **Swirl Surface Relief** | ~1.6 mm | 1.89 mm |
+| **Bed Stability Margin** | 25 mm | 32 mm |
+| **Print Bed Requirement** | Fits standard 180×180 mm (e.g. A1 Mini) | Fits A1 Mini (1 per plate) |
+| **Matching Blade Drawer** | `blade_drawer.stl` (identical tuck fit) | `blade_drawer.stl` (identical tuck fit) |
+
+### Why the Standard Variant?
+The Travel bowl's 46 mm floor and 104 mL cavity are optimized for luggage portability, but a 24–28 mm shaving brush knot leaves only ~9 mm of room on each side, which causes lather to work up into the brush knot rather than building in the bowl. The **Standard** version increases the inner diameter to 100 mm and provides a wide, 64 mm flat swirl floor with a corner transition radius, matching commercial artisan lather bowls while sharing the same tuck-sized slide-out blade drawer (`blade_drawer.stl`).
+
 ## Files
 
 - `travel_shaving_bowl.scad` — parametric source and selectable test/view modes.
-- `travel_shaving_bowl.stl` — bowl/body with integrated handle, dock, and empty blade vault; drawer is excluded.
+- `travel_shaving_bowl.stl` — default standard production body (110 mm, ~241 mL).
+- `Travel_Shaving_Bowl_v13_STANDARD_Bowl.stl` — high-resolution Standard variant production body.
+- `travel_shaving_bowl_travel.stl` — compact 84 mm Travel variant body.
 - `blade_drawer.stl` — separate captive sliding drawer with pull tab, passive detent bumps, and end-stop tabs.
 - `texture_test_coupon.stl` — 40 × 40 mm terrain and diamond-pattern coupon.
 - `razor_dock_test.stl` — cradle and half-round head-shelf samples for 8, 10, 12, and 15 mm handles, spaced 54 mm apart.

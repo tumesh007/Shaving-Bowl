@@ -3,16 +3,14 @@ import math
 import os
 from mathutils import Vector
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(ROOT, "renders")
 BODY = os.path.join(ROOT, "travel_shaving_bowl.stl")
 DRAWER = os.path.join(ROOT, "blade_drawer.stl")
-
 
 def clear_scene():
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
-
 
 def material(name, color, metallic=0.0, roughness=0.42):
     mat = bpy.data.materials.new(name)
@@ -24,12 +22,10 @@ def material(name, color, metallic=0.0, roughness=0.42):
     shader.inputs["Roughness"].default_value = roughness
     return mat
 
-
 BODY_MAT = material("Ceramic blue-gray", (0.43, 0.58, 0.68))
 DRAWER_MAT = material("Drawer warm amber", (0.95, 0.52, 0.20))
 BLADE_MAT = material("Blade steel", (0.68, 0.73, 0.77), 0.78, 0.24)
 RAZOR_MAT = material("Razor handle", (0.16, 0.19, 0.22), 0.3, 0.28)
-
 
 def import_mesh(path, name, mat):
     old = set(bpy.data.objects)
@@ -43,26 +39,25 @@ def import_mesh(path, name, mat):
             polygon.use_smooth = True
     return added
 
-
 def add_body(with_drawer=True, open_drawer=False, blades=False):
     body = import_mesh(BODY, "Bowl and handle", BODY_MAT)[0]
     drawer = None
     if with_drawer:
         drawer = import_mesh(DRAWER, "Separate sliding drawer", DRAWER_MAT)[0]
+        # Align drawer along X with Standard bowl's vault (vault_center_x is shifted by +13 mm compared to travel)
+        drawer.location.x += 13.0
         if open_drawer:
             drawer.location.y += 45.0
     if blades:
-        # Generate a single tuck block
+        # Generate a single tuck block centered inside the drawer
         y_loc = 45.0 if open_drawer else 0.0
-        bpy.ops.mesh.primitive_cube_add(size=1, location=(
-            55.5, y_loc, 8.8))
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(68.5, y_loc, 8.8))
         blade = bpy.context.object
         blade.name = "Illustrative DE blade"
         blade.dimensions = (28.0, 56.0, 10.0)
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
         blade.data.materials.append(BLADE_MAT)
     return body, drawer
-
 
 def cut_half(obj, axis, plane):
     if obj.data.users > 1:
@@ -82,19 +77,17 @@ def cut_half(obj, axis, plane):
     bpy.ops.object.modifier_apply(modifier=mod.name)
     bpy.data.objects.remove(cutter, do_unlink=True)
 
-
 def setup_camera(target, direction, scale):
     target = Vector(target)
     direction = Vector(direction).normalized()
     data = bpy.data.cameras.new("Preview camera")
     camera = bpy.data.objects.new("Preview camera", data)
     bpy.context.collection.objects.link(camera)
-    camera.location = target + direction * 220
+    camera.location = target + direction * 240
     camera.rotation_euler = (-direction).to_track_quat("-Z", "Y").to_euler()
     data.type = "ORTHO"
     data.ortho_scale = scale
     bpy.context.scene.camera = camera
-
 
 def setup_lighting():
     world = bpy.data.worlds.new("Soft studio")
@@ -103,9 +96,9 @@ def setup_lighting():
     world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.8
     bpy.context.scene.world = world
     for name, location, power, size in [
-        ("Key", (15, -75, 115), 80000, 70),
-        ("Fill", (-95, -15, 55), 50000, 85),
-        ("Rim", (50, 85, 95), 70000, 65),
+        ("Key", (20, -90, 130), 90000, 80),
+        ("Fill", (-110, -20, 65), 60000, 95),
+        ("Rim", (60, 95, 110), 80000, 75),
     ]:
         data = bpy.data.lights.new(name, "AREA")
         data.energy = power
@@ -114,8 +107,7 @@ def setup_lighting():
         light = bpy.data.objects.new(name, data)
         bpy.context.collection.objects.link(light)
         light.location = location
-        light.rotation_euler = (Vector((12, -2, 22)) - light.location).to_track_quat("-Z", "Y").to_euler()
-
+        light.rotation_euler = (Vector((18, -2, 26)) - light.location).to_track_quat("-Z", "Y").to_euler()
 
 def render(name, target, direction, scale):
     scene = bpy.context.scene
@@ -138,15 +130,14 @@ def render(name, target, direction, scale):
     scene.render.filepath = os.path.join(OUT, name)
     bpy.ops.render.render(write_still=True)
 
-
-def standard_scene(name, target=(14, -1, 26), direction=(1, -1, 0.9), scale=135,
+def standard_scene(name, target=(18, -1, 30), direction=(1, -1, 0.9), scale=165,
                    open_drawer=False, blades=False, parked_razor=False):
     clear_scene()
     body, drawer = add_body(True, open_drawer, blades)
     if parked_razor:
         dock_raise = 8
         axis = Vector((math.sin(math.radians(65)), 0, math.cos(math.radians(65))))
-        center = Vector((42.0, 0, 34 + dock_raise))
+        center = Vector((55.0 + 2.0, 0, 44.6 + dock_raise))
         bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=5.4, depth=18,
                                             location=center + axis * 12)
         shaft = bpy.context.object
@@ -163,7 +154,6 @@ def standard_scene(name, target=(14, -1, 26), direction=(1, -1, 0.9), scale=135,
         head.data.materials.append(RAZOR_MAT)
     render(name, target, direction, scale)
 
-
 def section_scene(name, axis, plane, direction, target, scale, blades=False, open_drawer=False):
     clear_scene()
     body, drawer = add_body(True, open_drawer, blades)
@@ -172,17 +162,16 @@ def section_scene(name, axis, plane, direction, target, scale, blades=False, ope
         cut_half(drawer, axis, plane)
     render(name, target, direction, scale)
 
-
+print("Starting Blender renders for Standard bowl...")
 standard_scene("01-isometric.png")
-standard_scene("02-top.png", target=(14, -1, 26), direction=(0, 0, 1), scale=122)
-standard_scene("03-side.png", target=(14, -1, 26), direction=(0, -1, 0), scale=120)
-standard_scene("04-bottom.png", target=(14, -1, 20), direction=(0, 0, -1), scale=122)
-standard_scene("05-lather-surface-closeup.png", target=(0, 0, 13), direction=(0.2, -0.4, 1), scale=73,
-               )
-section_scene("06-texture-section.png", 1, 0, (0, 1, 0), (0, 0, 18), 115)
-section_scene("07-handle-section.png", 1, 0, (0, 1, 0), (45, 0, 19), 76)
-section_scene("08-centered-blade-compartment.png", 0, 53.5, (1, 0, 0), (53.5, 0, 7), 70, blades=True)
-section_scene("09-blade-drawer-section.png", 0, 53.5, (1, 0, 0), (53.5, 0, 7), 70, blades=True)
+standard_scene("02-top.png", target=(18, -1, 30), direction=(0, 0, 1), scale=155)
+standard_scene("03-side.png", target=(18, -1, 30), direction=(0, -1, 0), scale=150)
+standard_scene("04-bottom.png", target=(18, -1, 24), direction=(0, 0, -1), scale=155)
+standard_scene("05-lather-surface-closeup.png", target=(0, 0, 15), direction=(0.2, -0.4, 1), scale=90)
+section_scene("06-texture-section.png", 1, 0, (0, 1, 0), (0, 0, 20), 140)
+section_scene("07-handle-section.png", 1, 0, (0, 1, 0), (58, 0, 22), 95)
+section_scene("08-centered-blade-compartment.png", 0, 66.5, (1, 0, 0), (66.5, 0, 9), 85, blades=True)
+section_scene("09-blade-drawer-section.png", 0, 66.5, (1, 0, 0), (66.5, 0, 9), 85, blades=True)
 standard_scene("10-razor-in-dock.png", parked_razor=True)
 standard_scene("11-drawer-installed.png")
 standard_scene("12-drawer-partially-open.png", open_drawer=True)
@@ -190,8 +179,9 @@ standard_scene("13-blades-inside-drawer.png", blades=True)
 
 clear_scene()
 import_mesh(BODY, "Bowl and half-round head shelf", BODY_MAT)
-render("14-head-rest-closeup.png", target=(51, 0, 44), direction=(0.55, -1, 0.75), scale=48)
+render("14-head-rest-closeup.png", target=(64, 0, 52), direction=(0.55, -1, 0.75), scale=55)
 
 clear_scene()
 import_mesh(BODY, "Embossed name on bowl exterior", BODY_MAT)
-render("15-name-emboss-closeup.png", target=(-40, 0, 22), direction=(-1, 0, 0), scale=62)
+render("15-name-emboss-closeup.png", target=(-53, 0, 26), direction=(-1, 0, 0), scale=75)
+print("Finished Blender renders successfully.")

@@ -5,6 +5,16 @@ The canonical model and all selectable test parts are in
 millimetres. Edit the values near the top of that file or pass OpenSCAD `-D`
 overrides when exporting.
 
+## Presets
+
+| Parameter | Default | Values | Purpose |
+| --- | ---: | --- | --- |
+| `bowl_preset` | `"standard"` | `"standard"`, `"travel"` | Selects between the 110 mm wide-floor Standard bowl and the 84 mm compact Travel bowl |
+
+When `bowl_preset` is set:
+- `"standard"` sets `bowl_outer_diameter = 110`, `bowl_inner_diameter = 100`, `bowl_height = 45.6`, flat swirl floor with corner radius $k=6$, and scaled emboss widths.
+- `"travel"` sets `bowl_outer_diameter = 84`, `bowl_inner_diameter = 73.7`, `bowl_height = 38.5`, smooth spherical base, and standard emboss dimensions.
+
 ## Bowl
 
 | Parameter | Default | Purpose |

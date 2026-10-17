@@ -9,9 +9,13 @@ use <fonts/Pacifico-Regular.ttf>
  */
 
 // ---------- Main dimensions (millimetres) ----------
-bowl_outer_diameter = 84;
-bowl_inner_diameter = 73.7;
-bowl_height = 38.5;
+// bowl_preset: "travel"   = 84 mm bowl, about 105 mL, hemispherical (v12)
+//              "standard" = 110 mm bowl, about 250 mL, flat 56 mm swirl floor, room to work a 24-28 mm brush knot
+bowl_preset = "standard";
+is_standard = (bowl_preset == "standard");
+bowl_outer_diameter = is_standard ? 110 : 84;
+bowl_inner_diameter = is_standard ? 100 : 73.7;
+bowl_height = is_standard ? 45.6 : 38.5;   // standard: = inner radius 50 - 4.4, so the sphere meets a 4.2 mm floor at radius 28
 wall_thickness = 3;
 base_thickness = 3.5;
 rim_width = 6;
@@ -73,10 +77,10 @@ emboss_line1 = "Tumesh's";
 emboss_line2 = "Travel Shaving Bowl";
 emboss_bold = 0.15;
 emboss_font = "Pacifico";
-emboss_width1 = 34;
-emboss_width2 = 48;
-emboss_line_gap = 10;
-emboss_z = 22;
+emboss_width1 = is_standard ? 46 : 34;
+emboss_width2 = is_standard ? 66 : 48;
+emboss_line_gap = is_standard ? 13 : 10;
+emboss_z = is_standard ? 26 : 22;
 emboss_height = 0.8;
 emboss_sink = 0.4;
 emboss_max_half_width = 25;
@@ -204,10 +208,14 @@ function combined_texture_height(x, y) =
 
 function inner_sphere_z(r) =
     bowl_height - sqrt(max(0, inner_radius*inner_radius - r*r));
+flat_floor = is_standard;
+floor_nominal_z = base_thickness + 0.7;      // texture valleys (-0.65) stay above the 3.5 mm clamp
+floor_corner_k = 6;                          // rounds the floor-to-wall corner (mm)
 function inner_bowl_base_z(r) =
-    let(sphere_z = inner_sphere_z(min(r, inner_radius)),
-        blend = smoothstep(8.0, 15.0, r))
-    base_thickness + blend * (sphere_z - base_thickness);
+    let(sphere_z = inner_sphere_z(min(r, inner_radius)))
+    flat_floor
+      ? (sphere_z + floor_nominal_z + sqrt((sphere_z - floor_nominal_z)*(sphere_z - floor_nominal_z) + floor_corner_k*floor_corner_k)) / 2
+      : base_thickness + smoothstep(8.0, 15.0, r) * (sphere_z - base_thickness);
 
 // ---------- Rounded primitives ----------
 module rounded_box(size=[10,10,10], radius=2, facets=20) {
@@ -611,12 +619,14 @@ module blade_storage() {
 // via the pillar and dock weld only.
 module vault_bowl_web() {
     // Welds the vault to the bowl at bed level and up to the vault roof (no open slot above it).
-    // The block is trimmed by a sphere slightly larger than the cavity so it can never poke into the bowl interior.
+    // Trimmed by a sphere slightly larger than the cavity so it can never poke into the bowl interior.
     h = vault_height();
+    x0 = outer_blank_start_radius() - 0.5;           // meets the 46-degree foot cone at the bed
+    x1 = vault_center_x() - vault_width()/2 + 2;     // buried in the vault wall (the drawer cavity is cut afterwards)
     difference() {
         hull() {
-            translate([25, 0, h/2]) cube([8, 52, h], center=true);   // x 21..29, meets the 45-degree foot cone at the bed
-            translate([38, 0, h/2]) cube([3, 52, h], center=true);   // x 36.5..39.5, buried in the vault wall (cavity void is cut later)
+            translate([x0 + 4, 0, h/2]) cube([8, 52, h], center=true);
+            translate([x1 - 1.5, 0, h/2]) cube([3, 52, h], center=true);
         }
         translate([0, 0, bowl_height]) sphere(r = inner_radius + 1.5, $fn = terrain_preview_fn);
     }
@@ -717,7 +727,7 @@ module name_emboss() {
 module emboss_test() {
     intersection() {
         bowl_body();
-        translate([-outer_radius - 2, -30, emboss_z - 12]) cube([14, 60, 24]);
+        translate([-outer_radius - 2, -(emboss_width2/2 + 4), emboss_z - 12]) cube([14, emboss_width2 + 8, 24]);
     }
 }
 

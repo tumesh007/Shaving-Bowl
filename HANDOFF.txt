@@ -1,9 +1,27 @@
 TRAVEL SHAVING BOWL — HANDOFF
-Updated: 2026-10-05
+Updated: 2026-10-17
 
 PROJECT
 Repository: /home/pnb/repos/Shaving-Bowl
-Branch: main (v12 release)
+Branch: main (v13 release)
+
+SUMMARY OF CHANGES FOR V13
+1. Standard Variant Added:
+   - Added `bowl_preset = "standard"` (default) alongside `"travel"`.
+   - Scaled inner diameter to 100 mm (outer 110 mm), expanding cavity volume from ~104 mL to ~241 mL.
+   - Expanded flat swirl floor (slope < 30°) from 46 mm to 64 mm with a softened corner transition (k=6 mm).
+   - Solves the lather geometry issue where 24–28 mm brush knots trapped lather inside the knot.
+   - Derived `vault_bowl_web()` algebraically from bowl dimensions so both variants build seamlessly.
+   - The same captive blade drawer STL (`blade_drawer.stl`) mates perfectly with both variants.
+   - Name emboss scaled proportionally for the larger bowl diameter (widths 46/66 mm, gap 13 mm, z 26 mm).
+2. Quality & Mesh Validation (Standard Variant):
+   - One watertight body with 0 non-manifold edges.
+   - Razor handle diameters 11–15 mm and neck diameters up to 12 mm have 0.00 mm³ intersection.
+   - Captive drawer does not overlap vault cavity. Detent snap clearance is 0.10–0.14 mm at the detent nubs.
+   - Floor texture relief measured at 1.89 mm.
+   - Footprint stability margin: 32 mm.
+   - Exported at texture resolution 0.34 mm to fit within memory limits while matching sample density and relief.
+   - Fits Bambu Lab A1 Mini build plate individually (146 × 110 mm footprint).
 
 SUMMARY OF CHANGES FOR V12
 1. Incorporated changes from external review:
