@@ -44,14 +44,17 @@ def add_body(with_drawer=True, open_drawer=False, blades=False):
     drawer = None
     if with_drawer:
         drawer = import_mesh(DRAWER, "Separate sliding drawer", DRAWER_MAT)[0]
-        # Align drawer along X with Standard bowl's vault (vault_center_x is shifted by +13 mm compared to travel)
-        drawer.location.x += 13.0
+        # blade_drawer.stl was exported recentered at (0, 0, 0) resting on the bed.
+        # In the standard bowl, the vault center is at vault_center_x() = 68.5,
+        # and the drawer vertical elevation in assembly is z = drawer_z() - drawer_outer_height()/2 = 3.3.
+        drawer.location.x += 68.5
+        drawer.location.z += 3.3
         if open_drawer:
             drawer.location.y += 45.0
     if blades:
         # Generate a single tuck block centered inside the drawer
         y_loc = 45.0 if open_drawer else 0.0
-        bpy.ops.mesh.primitive_cube_add(size=1, location=(68.5, y_loc, 8.8))
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(68.5, y_loc, 9.3))
         blade = bpy.context.object
         blade.name = "Illustrative DE blade"
         blade.dimensions = (28.0, 56.0, 10.0)
@@ -162,7 +165,7 @@ def section_scene(name, axis, plane, direction, target, scale, blades=False, ope
         cut_half(drawer, axis, plane)
     render(name, target, direction, scale)
 
-print("Starting Blender renders for Standard bowl...")
+print("Starting Blender renders with drawer properly positioned in vault...")
 standard_scene("01-isometric.png")
 standard_scene("02-top.png", target=(18, -1, 30), direction=(0, 0, 1), scale=155)
 standard_scene("03-side.png", target=(18, -1, 30), direction=(0, -1, 0), scale=150)
@@ -170,8 +173,8 @@ standard_scene("04-bottom.png", target=(18, -1, 24), direction=(0, 0, -1), scale
 standard_scene("05-lather-surface-closeup.png", target=(0, 0, 15), direction=(0.2, -0.4, 1), scale=90)
 section_scene("06-texture-section.png", 1, 0, (0, 1, 0), (0, 0, 20), 140)
 section_scene("07-handle-section.png", 1, 0, (0, 1, 0), (58, 0, 22), 95)
-section_scene("08-centered-blade-compartment.png", 0, 66.5, (1, 0, 0), (66.5, 0, 9), 85, blades=True)
-section_scene("09-blade-drawer-section.png", 0, 66.5, (1, 0, 0), (66.5, 0, 9), 85, blades=True)
+section_scene("08-centered-blade-compartment.png", 0, 68.5, (1, 0, 0), (68.5, 0, 9), 85, blades=True)
+section_scene("09-blade-drawer-section.png", 0, 68.5, (1, 0, 0), (68.5, 0, 9), 85, blades=True)
 standard_scene("10-razor-in-dock.png", parked_razor=True)
 standard_scene("11-drawer-installed.png")
 standard_scene("12-drawer-partially-open.png", open_drawer=True)
