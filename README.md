@@ -59,6 +59,32 @@ flatpak run org.openscad.OpenSCAD -D 'render_mode="blade_section"' -o renders/bl
 flatpak run org.openscad.OpenSCAD -D 'render_mode="blades_inside"' -o renders/blades-inside.png travel_shaving_bowl.scad
 ```
 
+## Slicer & Printing Recommendations (Bambu Studio)
+
+Configured for a **0.4 mm nozzle**, **0.2 mm layer height**, in **PETG** or **PLA**:
+
+### Quality, Strength & Infill
+
+| Setting | Value | Why |
+| :--- | :--- | :--- |
+| **Top shell layers** | 6 (~1.2 mm) | The diamond relief is ~1.8 mm tall. Fewer layers allow sparse infill to show through beneath the diamond tops. |
+| **Bottom shell layers** | 4 (~0.8 mm) | The foot is a large flat contact area; 4 solid layers provide a firm, leak-free first face. |
+| **Bottom surface pattern** | Monotonic line | Smooth, reliable on a flat foot, leaving no center gaps. |
+| **Internal solid infill pattern** | Rectilinear | Alternates 45° lines, providing a solid foundation under each textured diamond feature. |
+| **Sparse infill pattern & density** | Gyroid, 15–20% | High omnidirectional strength to firmly support the razor dock cantilevered from the 6 mm vertical pillar. |
+| **Wall loops** | 5 | The vertical handle pillar is 6 mm thick; 5 wall perimeters make it solid 100% plastic for maximum rigidity. |
+| **Detect thin walls** | On | Accurately renders the 0.8 mm drainage channels between diamond textures. |
+| **Top surface pattern** | Monotonic line | Clean, consistent finish; leave ironing **off**. |
+
+### Supports & Bridging
+
+- **Support Type:** **Tree supports**, set to **Everywhere** (threshold angle **35–40°**).
+  > **Crucial:** In v11+ the dock underside hangs directly above the vault roof rather than the build plate. Setting supports to "On build plate only" leaves the dock underside unsupported!
+- **Support Blocking:** Use **Support Painting set to "Block"** inside the slide-in drawer vault cavity. The flat vault ceiling is designed to bridge cleanly without internal supports that would ruin slide tolerances.
+- **Bridging:** Set to slow bridge speed, with bridge cooling fan at 100%. *(Note: with PETG, expect slight sag across the 34 mm ceiling span; PLA bridges flatter).*
+- **Overhangs:** Enable slow printing for overhangs.
+- **Seam Placement:** Set to **Aligned**, placed away from the exterior embossed name text on the -X side.
+
 ## Design notes
 
 - The inside and outside bowl profiles are rounded and near-hemispherical, with a stable 45-degree conical base footprint ($r \ge 20$ mm at $z = 0.3$ mm) and a minimum 3.5 mm center floor. Nominal bowl dimensions are `bowl_outer_diameter = 84` mm, `bowl_inner_diameter = 73.7` mm, and `bowl_height = 38.5` mm.
