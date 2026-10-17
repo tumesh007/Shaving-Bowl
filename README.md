@@ -19,7 +19,7 @@ Starting with v13, the model includes two presets selectable via `bowl_preset` i
 | **Wall Thickness** | ~5.1 mm | ~5.2 mm |
 | **Swirl Surface Relief** | ~1.6 mm | 1.89 mm |
 | **Bed Stability Margin** | 25 mm | 32 mm |
-| **Print Bed Requirement** | Fits standard 180×180 mm (e.g. A1 Mini) | Fits A1 Mini (1 per plate) |
+| **Print Bed Requirement** | Fits A1 Mini (2 per plate with drawers) | Fits A1 Mini (1 per plate) |
 | **Matching Blade Drawer** | `blade_drawer.stl` (identical tuck fit) | `blade_drawer.stl` (identical tuck fit) |
 
 ### Why the Standard Variant?

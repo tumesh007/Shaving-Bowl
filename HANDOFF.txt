@@ -21,7 +21,7 @@ SUMMARY OF CHANGES FOR V13
    - Floor texture relief measured at 1.89 mm.
    - Footprint stability margin: 32 mm.
    - Exported at texture resolution 0.34 mm to fit within memory limits while matching sample density and relief.
-   - Fits Bambu Lab A1 Mini build plate individually (146 × 110 mm footprint).
+   - Fits Bambu Lab A1 Mini build plate individually (146 × 110 mm footprint), whereas the Travel version fits 2 per plate with drawers.
 
 SUMMARY OF CHANGES FOR V12
 1. Incorporated changes from external review:
