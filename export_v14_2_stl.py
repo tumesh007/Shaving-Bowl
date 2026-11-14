@@ -18,6 +18,9 @@ out_bin = os.path.join(SCRIPT_DIR, bin_name)
 
 print(f"==========================================")
 print(f"Exporting v14.2 STANDARD preset via CGAL to {bin_name}...")
+if os.path.exists(out_bin):
+    os.remove(out_bin)
+
 t0 = time.time()
 cmd = cmd_base + [
     "-D", "preview_mode=false",
@@ -30,9 +33,10 @@ cmd = cmd_base + [
 res = subprocess.run(cmd, cwd=SCRIPT_DIR, capture_output=True, text=True)
 dt = time.time() - t0
 
-if not os.path.exists(out_bin):
-    print(f"Failed to generate {bin_name}!")
+if res.returncode != 0 or not os.path.exists(out_bin):
+    print(f"Failed to generate {bin_name}! Exit code: {res.returncode}")
     print("Stderr:", res.stderr)
+    print("Stdout:", res.stdout)
     sys.exit(1)
 
 size_mb = os.path.getsize(out_bin) / (1024 * 1024)

@@ -451,7 +451,7 @@ module final_merged_handle() {
     pillar_top_z = bowl_height - 1 + dock_raise + 1.5;
     
     wall_start_z = is_standard ? 12.0 : 10.0;
-    wall_start_x = is_standard ? 34.0 : 25.0;
+    wall_start_x = is_standard ? 41.0 : 34.0;
     actual_wall_x = wall_start_x;
     
     // Strut geometry: sliced cylinder with 2-finger pinch waist
@@ -559,6 +559,24 @@ module name_emboss() {
         }
 }
 
+// v14.2: Razor handle clearance and water drip-down cutout through bowl rim
+module razor_rim_drip_cutout() {
+    clear_r = dock_inner_r(razor_handle_max_diameter) + 0.3;
+    outer_r = dock_outer_r(razor_handle_max_diameter);
+    
+    translate([outer_radius + dock_offset_x, 0, bowl_height - 1 + dock_raise])
+        rotate([0, 90 - razor_dock_angle, 0]) {
+            // 1. Lower cylindrical handle bore extending through rim wall into bowl
+            translate([0, 0, -45])
+                cylinder(h=50, r=clear_r, $fn=rounded_fn*2);
+            
+            // 2. Open U-channel on top facing into the bowl
+            // Local -X is UP/inward towards bowl center
+            translate([-50, 0, -20])
+                cube([100, 2*clear_r, 50], center=true);
+        }
+}
+
 module bowl_body() {
     difference() {
         union() {
@@ -567,6 +585,7 @@ module bowl_body() {
             name_emboss();
         }
         interior_surface();
+        razor_rim_drip_cutout();
     }
 }
 
