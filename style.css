@@ -670,3 +670,125 @@ textarea#scad-code-output {
     justify-content: flex-end;
     gap: 12px;
 }
+
+/* Engraving Section & Live Font Preview */
+.engraving-section {
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.05) 0%, rgba(23, 25, 30, 0.5) 100%);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.font-tag {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--gold);
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.5px;
+}
+
+.engraving-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input-row label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+}
+
+.slider-row {
+    margin-top: 4px;
+}
+
+.font-preview-box {
+    margin-top: 6px;
+    padding: 12px 14px;
+    background: #0d0f14;
+    border: 1px solid var(--border-highlight);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.pacifico-preview {
+    font-family: var(--font-script);
+    color: var(--gold-light);
+    font-size: 20px;
+    text-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.cam-btn.active {
+    background: var(--gold);
+    color: #000;
+    font-weight: 600;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(14, 15, 19, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 20;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.hidden {
+    display: none;
+}
+
+.spinner {
+    width: 38px;
+    height: 38px;
+    border: 3px solid rgba(212, 175, 55, 0.2);
+    border-top: 3px solid var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#loading-text {
+    font-size: 13px;
+    color: var(--gold-light);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}

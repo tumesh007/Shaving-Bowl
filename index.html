@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tumesh's Shaving Bowl Customizer (v14 & v14.1)</title>
+    <title>Tumesh's Shaving Bowl Customizer (v14.2)</title>
     <link rel="stylesheet" href="style.css">
     <!-- Google Fonts for luxury artisan grooming aesthetic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
-    <!-- Three.js + OrbitControls -->
+    <!-- Three.js + OrbitControls + STLLoader -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 </head>
 <body>
     <div class="app-container">
         <!-- Top Navigation Bar -->
         <header class="app-header">
             <div class="brand">
-                <span class="brand-badge">v14.1</span>
+                <span class="brand-badge">v14.2</span>
                 <h1>TUMESH'S SHAVING BOWL</h1>
                 <span class="brand-sub">Parametric 3D Customizer &middot; Bambu Lab A1 Mini Ready</span>
             </div>
             <div class="header-actions">
                 <button id="btn-reset" class="btn-secondary" title="Reset all parameters to default">Reset</button>
                 <button id="btn-download-scad" class="btn-secondary" title="Download parametric OpenSCAD source file">Download .SCAD</button>
-                <button id="btn-export-stl" class="btn-primary" title="Export customized binary STL ready for Bambu Studio">Export Custom STL</button>
+                <button id="btn-export-stl" class="btn-primary" title="Export binary STL ready for Bambu Studio">Export Custom STL</button>
             </div>
         </header>
 
@@ -38,8 +39,8 @@
                 <!-- Floating 3D Overlays & Quick View Controls -->
                 <div class="viewport-controls">
                     <div class="view-buttons">
-                        <button class="cam-btn" data-view="iso">Isometric</button>
-                        <button class="cam-btn" data-view="top">Top (Swirl Floor)</button>
+                        <button class="cam-btn active" data-view="iso">Isometric</button>
+                        <button class="cam-btn" data-view="top">Top (Lather Floor)</button>
                         <button class="cam-btn" data-view="side">Side (Handle)</button>
                         <button class="cam-btn" data-view="front">Front (Emboss)</button>
                     </div>
@@ -50,34 +51,40 @@
                     </div>
                 </div>
 
+                <!-- Loading Indicator Overlay -->
+                <div id="loading-overlay" class="loading-overlay hidden">
+                    <div class="spinner"></div>
+                    <span id="loading-text">Rendering Production Mesh...</span>
+                </div>
+
                 <!-- Material / Color Selector -->
                 <div class="material-palette">
                     <span class="palette-label">Filament:</span>
-                    <button class="color-dot active" data-color="0xd4af37" title="Textured Gold PEI / Silk Gold"></button>
+                    <button class="color-dot active" data-color="0xd4af37" title="Silk Gold / Textured PEI"></button>
                     <button class="color-dot" data-color="0x222224" title="Matte Charcoal Black"></button>
+                    <button class="color-dot" data-color="0x2d6852" title="Forest Green PETG"></button>
                     <button class="color-dot" data-color="0xd8d8d8" title="Arctic White PETG"></button>
                     <button class="color-dot" data-color="0x2b547e" title="Ocean Blue PETG"></button>
-                    <button class="color-dot" data-color="0x9e7b66" title="Artisan Terracotta"></button>
                 </div>
 
                 <!-- Live Dimensions & Mesh Stats Badge -->
                 <div class="stats-badge">
-                    <div class="stat-item"><span class="stat-label">Envelope:</span> <span id="stat-dims">146 &times; 110 &times; 70 mm</span></div>
+                    <div class="stat-item"><span class="stat-label">Envelope:</span> <span id="stat-dims">146 &times; 110 &times; 63 mm</span></div>
                     <div class="stat-item"><span class="stat-label">Capacity:</span> <span id="stat-volume">~241 mL</span></div>
                     <div class="stat-item"><span class="stat-label">Plate Margin:</span> <span id="stat-margin">+34 mm (A1 Mini)</span></div>
-                    <div class="stat-item"><span class="stat-label">Triangles:</span> <span id="stat-triangles">~88,000</span></div>
+                    <div class="stat-item"><span class="stat-label">Triangles:</span> <span id="stat-triangles">~87,400</span></div>
                 </div>
             </section>
 
             <!-- Customization Sidebar -->
             <aside class="sidebar">
-                <!-- Preset Switcher -->
+                <!-- 1. Preset Switcher -->
                 <div class="sidebar-section preset-section">
                     <label class="section-title">Model Preset</label>
                     <div class="segmented-control">
                         <button class="segment-btn active" data-preset="standard">
                             <strong>Standard Bowl</strong>
-                            <small>110 mm &middot; ~241 mL &middot; 24-28mm Knots</small>
+                            <small>110 mm &middot; ~241 mL &middot; Sliced Cylinder Handle</small>
                         </button>
                         <button class="segment-btn" data-preset="travel">
                             <strong>Travel Bowl</strong>
@@ -86,118 +93,123 @@
                     </div>
                 </div>
 
-                <!-- Quick Official Downloads -->
+                <!-- 2. Official Production STLs Quick Bar -->
                 <div class="sidebar-section downloads-quick-bar">
                     <label class="section-title">Official Production STLs</label>
                     <div class="quick-download-buttons">
-                        <a href="https://github.com/tumesh007/Shaving-Bowl/raw/main/Tumeshs_Shaving_Bowl_v14_1_STANDARD_bin.stl" download class="btn-dl-chip highlight">
-                            <span>v14.1 Standard (Support-Free)</span>
+                        <a id="link-v14-2-std" href="https://github.com/tumesh007/Shaving-Bowl/raw/main/Tumeshs_Shaving_Bowl_v14_2_STANDARD_bin.stl" download class="btn-dl-chip highlight">
+                            <span>v14.2 Standard (Sliced Cylinder)</span>
                             <small>4.4 MB Binary STL &middot; Recommended</small>
                         </a>
-                        <a href="https://github.com/tumesh007/Shaving-Bowl/raw/main/Tumeshs_Shaving_Bowl_v14_1_TRAVEL_bin.stl" download class="btn-dl-chip highlight">
+                        <a id="link-v14-1-travel" href="https://github.com/tumesh007/Shaving-Bowl/raw/main/Tumeshs_Shaving_Bowl_v14_1_TRAVEL_bin.stl" download class="btn-dl-chip highlight">
                             <span>v14.1 Travel (Support-Free)</span>
-                            <small>2.8 MB Binary STL &middot; Recommended</small>
-                        </a>
-                        <a href="https://github.com/tumesh007/Shaving-Bowl/raw/main/Tumeshs_Shaving_Bowl_v14_STANDARD_norack_bin.stl" download class="btn-dl-chip">
-                            <span>v14 Standard</span>
-                            <small>4.4 MB Binary STL</small>
-                        </a>
-                        <a href="https://github.com/tumesh007/Shaving-Bowl/raw/main/Tumeshs_Shaving_Bowl_v14_TRAVEL_norack_bin.stl" download class="btn-dl-chip">
-                            <span>v14 Travel</span>
-                            <small>2.8 MB Binary STL</small>
+                            <small>2.8 MB Binary STL &middot; Verified</small>
                         </a>
                     </div>
                 </div>
 
-                <!-- Parameters Accordion -->
+                <!-- 3. Prominent Custom Engraving Card -->
+                <div class="sidebar-section engraving-section">
+                    <div class="section-header-flex">
+                        <label class="section-title">Personalized Outer Wall Engraving</label>
+                        <span class="font-tag">Font: Pacifico</span>
+                    </div>
+                    
+                    <div class="engraving-inputs">
+                        <div class="input-row">
+                            <label for="emboss_line1">Top Text Line</label>
+                            <input type="text" id="emboss_line1" value="Tumesh's" maxlength="20" placeholder="e.g. Tumesh's">
+                        </div>
+
+                        <div class="input-row">
+                            <label for="emboss_line2">Bottom Text Line</label>
+                            <input type="text" id="emboss_line2" value="Shaving Bowl" maxlength="24" placeholder="e.g. Shaving Bowl">
+                        </div>
+
+                        <div class="input-row slider-row">
+                            <label for="emboss_height">Relief Height: <span id="val_emboss_height">0.8</span> mm</label>
+                            <input type="range" id="emboss_height" min="0.4" max="1.5" step="0.1" value="0.8">
+                        </div>
+
+                        <!-- Real-Time Font Preview Banner -->
+                        <div class="font-preview-box">
+                            <span id="preview-text-line1" class="pacifico-preview">Tumesh's</span>
+                            <span id="preview-text-line2" class="pacifico-preview">Shaving Bowl</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Parametric Customization Accordion -->
                 <div class="accordion">
-                    <!-- 1. Handle & Blade Storage -->
+                    <!-- Handle & Grip Ergonomics -->
                     <div class="accordion-item open">
                         <div class="accordion-header">
-                            <span>1. Handle &amp; Moisture Protection</span>
+                            <span>1. Sliced Cylinder Handle &amp; Grip</span>
                             <span class="chevron">&#9662;</span>
                         </div>
                         <div class="accordion-content">
-                            <div class="control-group toggle-group highlight-box">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="blade_storage_enabled">
-                                    <span class="slider"></span>
-                                </label>
-                                <div class="toggle-text">
-                                    <strong>Enclosed Blade Storage Drawer</strong>
-                                    <p id="moisture-warning" class="hint-text text-warning">
-                                        &bull; <strong>Recommended OFF:</strong> Water entering captive drawer cavity cannot dry quickly, causing trapped moisture and DE blade corrosion. OFF provides a rigid open-loop water-shedding handle.
-                                    </p>
-                                </div>
+                            <div class="control-group">
+                                <label for="handle_width">Handle Anchor Width: <span id="val_handle_width">20</span> mm</label>
+                                <input type="range" id="handle_width" min="14" max="24" step="1" value="20">
+                                <small class="hint-text">Midpoint tapers automatically to 78% width for 2-finger pinch lift.</small>
                             </div>
 
                             <div class="control-group">
-                                <label for="handle_width">Handle Width: <span id="val_handle_width">20</span> mm</label>
-                                <input type="range" id="handle_width" min="14" max="26" step="1" value="20">
-                            </div>
-
-                            <div class="control-group">
-                                <label for="handle_projection">Grip Loop Reach: <span id="val_handle_projection">27</span> mm</label>
-                                <input type="range" id="handle_projection" min="20" max="34" step="1" value="27">
+                                <label for="handle_projection">Grip Loop Reach: <span id="val_handle_projection">16</span> mm</label>
+                                <input type="range" id="handle_projection" min="12" max="22" step="1" value="16">
                             </div>
                         </div>
                     </div>
 
-                    <!-- 2. Bowl Dimensions -->
-                    <div class="accordion-item open">
+                    <!-- Bowl Dimensions -->
+                    <div class="accordion-item">
                         <div class="accordion-header">
                             <span>2. Bowl Geometry</span>
                             <span class="chevron">&#9662;</span>
                         </div>
                         <div class="accordion-content">
                             <div class="control-group">
-                                <label for="bowl_outer_diameter">Bowl Outer Diameter: <span id="val_bowl_outer_diameter">110</span> mm</label>
-                                <input type="range" id="bowl_outer_diameter" min="80" max="130" step="2" value="110">
+                                <label for="bowl_outer_diameter">Bowl Outer Diameter: <span id="val_bowl_outer_diameter">108</span> mm</label>
+                                <input type="range" id="bowl_outer_diameter" min="80" max="120" step="2" value="108">
                             </div>
 
                             <div class="control-group">
-                                <label for="bowl_height">Bowl Total Height: <span id="val_bowl_height">45.6</span> mm</label>
-                                <input type="range" id="bowl_height" min="36" max="55" step="0.5" value="45.6">
+                                <label for="bowl_height">Bowl Total Height: <span id="val_bowl_height">45.0</span> mm</label>
+                                <input type="range" id="bowl_height" min="36" max="52" step="0.5" value="45.0">
                             </div>
 
                             <div class="control-group">
                                 <label for="wall_thickness">Wall Thickness: <span id="val_wall_thickness">3.0</span> mm</label>
-                                <input type="range" id="wall_thickness" min="2.5" max="4.5" step="0.5" value="3.0">
+                                <input type="range" id="wall_thickness" min="2.5" max="4.0" step="0.5" value="3.0">
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. Lather Swirl Surface -->
+                    <!-- Lather Texture Parameters -->
                     <div class="accordion-item">
                         <div class="accordion-header">
-                            <span>3. Lather Height-Field Texture</span>
+                            <span>3. Micro-Diamond Lather Swirl Floor</span>
                             <span class="chevron">&#9662;</span>
                         </div>
                         <div class="accordion-content">
                             <div class="control-group">
-                                <label for="export_texture_resolution">Mesh Grid Pitch: <span id="val_export_texture_resolution">0.50</span> mm</label>
-                                <input type="range" id="export_texture_resolution" min="0.40" max="0.80" step="0.05" value="0.50">
-                                <small class="hint-text">Matched to 0.40 mm nozzle / 0.42 mm line physics.</small>
-                            </div>
-
-                            <div class="control-group">
                                 <label for="diamond_scale">Diamond Density Scale: <span id="val_diamond_scale">0.40</span></label>
-                                <input type="range" id="diamond_scale" min="0.25" max="0.80" step="0.05" value="0.40">
+                                <input type="range" id="diamond_scale" min="0.25" max="0.70" step="0.05" value="0.40">
                             </div>
 
                             <div class="control-group">
-                                <label for="diamond_ridge_height">Ridge Friction Height: <span id="val_diamond_ridge_height">1.15</span> mm</label>
-                                <input type="range" id="diamond_ridge_height" min="0.6" max="2.0" step="0.05" value="1.15">
+                                <label for="diamond_ridge_height">Ridge Friction Height: <span id="val_diamond_ridge_height">1.35</span> mm</label>
+                                <input type="range" id="diamond_ridge_height" min="0.8" max="2.0" step="0.05" value="1.35">
                             </div>
 
                             <div class="control-group">
-                                <label for="macro_hill_scale">Turbulent Swirl Undulation: <span id="val_macro_hill_scale">0.35</span></label>
-                                <input type="range" id="macro_hill_scale" min="0.10" max="0.70" step="0.05" value="0.35">
+                                <label for="macro_hill_scale">Turbulent Swirl Undulation: <span id="val_macro_hill_scale">0.40</span></label>
+                                <input type="range" id="macro_hill_scale" min="0.10" max="0.60" step="0.05" value="0.40">
                             </div>
                         </div>
                     </div>
 
-                    <!-- 4. Safety Razor Cradle -->
+                    <!-- Angled Razor Dock -->
                     <div class="accordion-item">
                         <div class="accordion-header">
                             <span>4. Angled Razor Dock &amp; Shelf</span>
@@ -206,8 +218,8 @@
                         <div class="accordion-content">
                             <div class="control-group">
                                 <label for="razor_handle_max_diameter">Max Razor Handle &empty;: <span id="val_razor_handle_max_diameter">15</span> mm</label>
-                                <input type="range" id="razor_handle_max_diameter" min="10" max="17" step="0.5" value="15">
-                                <small class="hint-text">Fits Merkur 34C, Muhle R89, Rockwell 6S, Henson AL13.</small>
+                                <input type="range" id="razor_handle_max_diameter" min="11" max="17" step="0.5" value="15">
+                                <small class="hint-text">Fits Merkur 34C, Mühle R89, Rockwell 6S, Henson AL13.</small>
                             </div>
 
                             <div class="control-group">
@@ -216,40 +228,16 @@
                             </div>
 
                             <div class="control-group">
-                                <label for="head_rest_radius">Head Shelf Semicircle Radius: <span id="val_head_rest_radius">24</span> mm</label>
-                                <input type="range" id="head_rest_radius" min="18" max="30" step="1" value="24">
+                                <label for="head_rest_radius">Head Shelf Radius: <span id="val_head_rest_radius">24</span> mm</label>
+                                <input type="range" id="head_rest_radius" min="18" max="28" step="1" value="24">
                             </div>
                         </div>
                     </div>
 
-                    <!-- 5. Embossed Name -->
+                    <!-- Bambu Studio Print Profile -->
                     <div class="accordion-item">
                         <div class="accordion-header">
-                            <span>5. Custom Outer Wall Emboss</span>
-                            <span class="chevron">&#9662;</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="control-group">
-                                <label for="emboss_line1">Top Text Line</label>
-                                <input type="text" id="emboss_line1" value="Tumesh's" maxlength="20">
-                            </div>
-
-                            <div class="control-group">
-                                <label for="emboss_line2">Bottom Text Line</label>
-                                <input type="text" id="emboss_line2" value="Shaving Bowl" maxlength="24">
-                            </div>
-
-                            <div class="control-group">
-                                <label for="emboss_height">Emboss Relief Height: <span id="val_emboss_height">0.8</span> mm</label>
-                                <input type="range" id="emboss_height" min="0.4" max="1.5" step="0.1" value="0.8">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 6. Bambu Slicer Guide -->
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <span>6. Bambu Studio Print Profile</span>
+                            <span>5. Bambu Studio Print Profile</span>
                             <span class="chevron">&#9662;</span>
                         </div>
                         <div class="accordion-content print-guide">
@@ -257,7 +245,7 @@
                             <div class="spec-row"><span>Layer Height:</span><strong>0.20 mm Standard</strong></div>
                             <div class="spec-row"><span>Wall Loops:</span><strong>4 walls (water-tight seal)</strong></div>
                             <div class="spec-row"><span>Infill:</span><strong>15% Gyroid</strong></div>
-                            <div class="spec-row"><span>Supports:</span><strong>Tree (Auto), Critical regions only</strong></div>
+                            <div class="spec-row"><span>Supports:</span><strong>None required (100% Support-Free)</strong></div>
                             <div class="spec-row"><span>Recommended Filament:</span><strong>PETG (Hot water &amp; lather resistant)</strong></div>
                         </div>
                     </div>
@@ -270,7 +258,7 @@
     <div id="modal-scad" class="modal-backdrop hidden">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Parametric OpenSCAD Source</h3>
+                <h3>Parametric OpenSCAD Source (v14.2)</h3>
                 <button id="modal-close" class="modal-close-btn">&times;</button>
             </div>
             <div class="modal-body">
@@ -278,7 +266,7 @@
             </div>
             <div class="modal-footer">
                 <button id="btn-copy-scad" class="btn-secondary">Copy to Clipboard</button>
-                <button id="btn-save-scad" class="btn-primary">Download travel_shaving_bowl_v14_1.scad</button>
+                <button id="btn-save-scad" class="btn-primary">Download travel_shaving_bowl_v14_2.scad</button>
             </div>
         </div>
     </div>

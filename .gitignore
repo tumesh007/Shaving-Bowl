@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 *.stl
+!Tumeshs_Shaving_Bowl_v14_2_STANDARD_bin.stl
 !Tumeshs_Shaving_Bowl_v14_1_STANDARD_bin.stl
 !Tumeshs_Shaving_Bowl_v14_1_TRAVEL_bin.stl
 !Tumeshs_Shaving_Bowl_v14_STANDARD_norack_bin.stl

@@ -1,8 +1,23 @@
-# Tumesh's Shaving Bowl (v14 & v14.1)
+# Tumesh's Shaving Bowl (v14.2)
 
-Parametric, open lather shaving bowl with a blended height-field lather surface, support-free ergonomic angled handle truss, integrated safety razor cradle, and an interactive 3D Web Customizer. **Engineered specifically for support-free 3D printing on the Bambu Lab A1 Mini (0.40 mm nozzle, gold textured PEI plate).**
+Parametric, open lather shaving bowl with a blended height-field lather surface, support-free ergonomic sliced cylinder handle, integrated safety razor cradle, and an interactive 3D Web Customizer. **Engineered specifically for support-free 3D printing on the Bambu Lab A1 Mini (0.40 mm nozzle, gold textured PEI plate).**
 
 ![Isometric view of the bowl and integrated razor dock](renders/01-isometric.png)
+
+---
+
+## What's New in v14.2 (Sliced Cylinder Ergonomics & Web App Overhaul)
+
+1. **Sliced Cylinder Ergonomic Handle Support:**
+   - **Flaw in v14.1:** The v14.1 lower strut was a flat 20 mm wide rectangular bar that felt boxy and slippery when lifted between two fingers with wet, soapy hands.
+   - **v14.2 Solution:** Replaced with an architectural sliced-cylinder strut. The outer surface follows a smooth cylindrical arc, while the middle section tapers to an ergonomic **two-finger pinch waist** (narrowing to 15.6 mm at the midpoint).
+   - **100% Support-Free:** Sloped along the $49^\circ$ self-supporting axis ($0.00\text{ mm}^2$ steep overhang $>45^\circ$) with zero inner cavity protrusion.
+2. **Web App 3D STLLoader Integration:**
+   - Integrated Three.js `STLLoader` into `index.html` and `app.js` to render the verified production binary STL directly in 3D.
+   - Cures all disconnected floating boxes and reveals the authentic micro-diamond lather friction floor.
+3. **Real-Time Dynamic Outer Wall Engraving:**
+   - Promoted custom text inputs to a dedicated, always-visible card.
+   - Dynamic 2D canvas decal renders the cursive `Pacifico` script text onto the 3D bowl wall live as you type.
 
 ---
 
