@@ -231,10 +231,13 @@ function generateBowlGeometry() {
     floorGeo.computeVertexNormals();
     geometries.push(floorGeo);
 
-    // 3. Redesigned Ergonomic Open-Loop Handle (v14: No Inverted Triangle at Base)
+    // 3. Redesigned Ergonomic Open-Loop Handle (v14.1: Streamlined Support-Free Truss)
     const handleW = state.handle_width;
     const pillarX = outerRadius + state.handle_projection;
-    const dockRaise = 8;
+    const dockRaise = 1.5;
+    const dockOffsetX = -0.5;
+    const dockOriginX = outerRadius + dockOffsetX;
+    const dockOriginY = bowlHeight - 1 + dockRaise;
     const topZ = bowlHeight - 1 + dockRaise + 2;
     const bottomZ = 18.0; // Clean floating clearance above the bed
 
@@ -244,9 +247,9 @@ function generateBowlGeometry() {
     geometries.push(pillarGeo);
 
     // Upper Bridge connecting to Dock
-    const upperBridgeL = pillarX - (outerRadius + 2.0);
+    const upperBridgeL = pillarX - dockOriginX;
     const upperBridgeGeo = new THREE.BoxGeometry(upperBridgeL, 6, handleW);
-    upperBridgeGeo.translate(outerRadius + 2.0 + upperBridgeL / 2, topZ, 0);
+    upperBridgeGeo.translate(dockOriginX + upperBridgeL / 2, topZ, 0);
     geometries.push(upperBridgeGeo);
 
     // Lower Return Arch Sweeping Directly into Bowl Wall (at Z = 18 mm)
@@ -257,15 +260,15 @@ function generateBowlGeometry() {
     lowerArchGeo.translate(lowerWallX + lowerArchL / 2, bottomZ, 0);
     geometries.push(lowerArchGeo);
 
-    // 4. Safety Razor Dock & Semicircle Head Rest Shelf
+    // 4. Safety Razor Dock & Semicircle Head Rest Shelf (Seamless Zero-Gap Rim Integration)
     const dockAngleRad = (90 - state.razor_dock_angle) * Math.PI / 180;
     const dockOuterR = state.razor_handle_max_diameter / 2 + 3.0;
     const dockLen = 18.0;
 
     const dockCyl = new THREE.CylinderGeometry(dockOuterR, dockOuterR, dockLen, 24, 1, true);
     dockCyl.rotateZ(dockAngleRad);
-    dockCyl.translate(outerRadius + 2.0 + (dockLen / 2) * Math.cos(dockAngleRad),
-                      bowlHeight - 1 + dockRaise + (dockLen / 2) * Math.sin(dockAngleRad),
+    dockCyl.translate(dockOriginX + (dockLen / 2) * Math.cos(dockAngleRad),
+                      dockOriginY + (dockLen / 2) * Math.sin(dockAngleRad),
                       0);
     geometries.push(dockCyl);
 
@@ -273,8 +276,8 @@ function generateBowlGeometry() {
     const shelfR = state.head_rest_radius;
     const shelfGeo = new THREE.CylinderGeometry(shelfR, shelfR, 3.5, 24, 1, false, 0, Math.PI);
     shelfGeo.rotateZ(dockAngleRad);
-    const shelfX = outerRadius + 2.0 + (dockLen + 3.0) * Math.cos(dockAngleRad);
-    const shelfY = bowlHeight - 1 + dockRaise + (dockLen + 3.0) * Math.sin(dockAngleRad);
+    const shelfX = dockOriginX + (dockLen + 3.0) * Math.cos(dockAngleRad);
+    const shelfY = dockOriginY + (dockLen + 3.0) * Math.sin(dockAngleRad);
     shelfGeo.translate(shelfX, shelfY, 0);
     geometries.push(shelfGeo);
 

@@ -75,7 +75,8 @@ razor_handle_min_diameter = 8;
 razor_handle_max_diameter = 15;
 razor_handle_clearance = 1.0;
 razor_dock_wall = 3.0;
-dock_raise = 8;
+dock_raise = 1.5;
+dock_offset_x = -0.5;
 overhang_safe = true;
 gusset_start = 2.0;
 gusset_drop = 12.0;
@@ -349,7 +350,7 @@ module dock_body(diameter=razor_handle_max_diameter) {
 }
 
 module razor_dock() {
-    translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
+    translate([outer_radius + dock_offset_x, 0, bowl_height - 1 + dock_raise])
         rotate([0, 90 - razor_dock_angle, 0])
             dock_body();
 }
@@ -405,7 +406,7 @@ module head_rest_shape() {
 }
 
 module razor_head_support() {
-    translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
+    translate([outer_radius + dock_offset_x, 0, bowl_height - 1 + dock_raise])
         rotate([0, 90 - razor_dock_angle, 0]) {
             translate([0, 0, dock_length() + head_rest_gap])
                 head_rest_shape();
@@ -424,21 +425,19 @@ module handle_profile_box(dx, dy, dz, r=2) {
 // v14.1: Streamlined Support-Free Ergonomic Truss Handle
 // Fully self-supporting at 49 degrees with zero horizontal ceilings and zero mid-air bridges.
 module final_merged_handle() {
-    pillar_reach = is_standard ? 19.0 : 16.0;
+    pillar_reach = is_standard ? 17.0 : 13.5;
     pillar_x = outer_radius + pillar_reach;
     pillar_top_z = bowl_height - 1 + dock_raise + 1.5;
     
-    wall_start_x = outer_radius - 12.0;
-    wall_start_z = is_standard ? 16.0 : 12.0;
-    
-    dyn_wall_x = pillar_x - (pillar_top_z - wall_start_z) / 1.15;
-    actual_wall_x = min(wall_start_x, dyn_wall_x);
+    wall_start_x = is_standard ? (outer_radius - 15.0) : (outer_radius - 13.0);
+    wall_start_z = is_standard ? 14.0 : 10.0;
+    actual_wall_x = wall_start_x;
     
     difference() {
         union() {
             // 1. Upper bridge from razor dock to pillar top
             hull() {
-                translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
+                translate([outer_radius + dock_offset_x, 0, bowl_height - 1 + dock_raise])
                     rotate([0, 90 - razor_dock_angle, 0])
                         translate([0, 0, dock_length()]) 
                             sphere(r=dock_outer_r(razor_handle_max_diameter)-1, $fn=rounded_fn);
@@ -464,13 +463,13 @@ module final_merged_handle() {
         }
         
         // Extended razor shaft cutout
-        translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
+        translate([outer_radius + dock_offset_x, 0, bowl_height - 1 + dock_raise])
             rotate([0, 90 - razor_dock_angle, 0])
                 translate([0, 0, -100])
                     cylinder(h=200, r=dock_inner_r(razor_handle_max_diameter) + 0.03, $fn=rounded_fn*2);
         
         // Re-apply dock top opening
-        translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
+        translate([outer_radius + dock_offset_x, 0, bowl_height - 1 + dock_raise])
             rotate([0, 90 - razor_dock_angle, 0]) {
                 translate([-dock_outer_r(razor_handle_max_diameter)-2, 0, dock_length()/2])
                     cube([2*(dock_outer_r(razor_handle_max_diameter)+1) + 0.06, 

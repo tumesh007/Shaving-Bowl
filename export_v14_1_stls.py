@@ -43,7 +43,7 @@ def verify_stl(path, is_standard_preset):
         ray_hits = {pt: [] for pt in test_rays}
         
         steep_handle_overhang_area = 0.0
-        handle_z_max = 38.0 if is_standard_preset else 30.0
+        handle_z_max = 24.0 if is_standard_preset else 20.0
         handle_x_min = 45.0 if is_standard_preset else 35.0
         
         def sign(p1, p2, p3):
@@ -115,6 +115,14 @@ def export_variant(preset_name, base_name):
     asc_name = f"{base_name}.stl"
     out_bin = os.path.join(SCRIPT_DIR, bin_name)
     out_asc = os.path.join(SCRIPT_DIR, asc_name)
+    is_std = (preset_name == "standard")
+
+    if "--skip-existing" in sys.argv and os.path.exists(out_bin):
+        print(f"\n==========================================")
+        print(f"Found existing {bin_name}, checking verification...")
+        if verify_stl(out_bin, is_std):
+            print(f"Skipping re-render for verified {bin_name}")
+            return
 
     print(f"\n==========================================")
     print(f"Exporting {preset_name.upper()} preset via CGAL to {bin_name}...")
