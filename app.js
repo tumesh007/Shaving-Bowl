@@ -483,7 +483,7 @@ function exportBinarySTL() {
 // -------------------------------------------------------------
 function generateOpenSCADSource() {
     return `/*
- * Tumesh's Shaving Bowl (v14) - Parametric Customizer Export
+ * Tumesh's Shaving Bowl (v14.1) - Parametric Customizer Export
  * Generated at: ${new Date().toISOString()}
  * Presets: ${state.preset.toUpperCase()}
  */
@@ -506,6 +506,8 @@ macro_hill_scale = ${state.macro_hill_scale.toFixed(2)};
 blade_storage_enabled = ${state.blade_storage_enabled ? "true" : "false"};
 handle_width = ${state.handle_width};
 
+dock_raise = 1.5;
+dock_offset_x = -0.5;
 razor_dock_angle = ${state.razor_dock_angle};
 razor_handle_max_diameter = ${state.razor_handle_max_diameter};
 head_rest_radius = ${state.head_rest_radius};
@@ -515,8 +517,8 @@ emboss_line1 = "${state.emboss_line1}";
 emboss_line2 = "${state.emboss_line2}";
 emboss_height = ${state.emboss_height};
 
-// Include official v14 module definitions
-include <travel_shaving_bowl.scad>;
+// Include official v14.1 module definitions
+include <travel_shaving_bowl_v14_1.scad>;
 `;
 }
 

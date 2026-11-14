@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.stl
+!Tumeshs_Shaving_Bowl_v14_1_STANDARD_bin.stl
+!Tumeshs_Shaving_Bowl_v14_1_TRAVEL_bin.stl
+!Tumeshs_Shaving_Bowl_v14_STANDARD_norack_bin.stl
+!Tumeshs_Shaving_Bowl_v14_TRAVEL_norack_bin.stl
+!Travel_Shaving_Bowl_v13_STANDARD_Bowl.stl
+!travel_shaving_bowl.stl
+!blade_drawer.stl
+!blade_storage_test.stl
+!emboss_test.stl
+!razor_dock_test.stl
+!texture_test_coupon.stl
