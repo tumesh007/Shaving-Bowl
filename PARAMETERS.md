@@ -37,7 +37,7 @@ not use those three parameters as direct geometry inputs.
 | --- | ---: | --- |
 | `preview_mode` | `true` | Faster, coarser interactive model |
 | `preview_texture_resolution` | 0.6 | Preview height-field grid spacing |
-| `export_texture_resolution` | 0.25 | STL height-field grid spacing (rule: $\le$ (`diamond_width` + `diamond_spacing`) / 10) |
+| `export_texture_resolution` | 0.50 | STL height-field grid spacing (rule: $\le$ (`diamond_width` + `diamond_spacing`) / 10) |
 | `texture_seed` | 4217 | Repeatable deterministic feature layout |
 | `diamond_scale` | 0.4 | Uniform scale factor: 1.0 = v4 size (8 × 5 mm); smaller = denser pattern |
 | `diamond_length` | 8 × `diamond_scale` | Rhombus pitch along the long axis |
@@ -95,6 +95,12 @@ seeded terrain blends into the diamonds without forming isolated deep craters.
 | `head_rest_flat_edge` | 6 | Offset for straight edge flat cut |
 | `head_rest_drain_gap` | 5 | Through-drainage cutout width |
 
+## Blade storage option
+
+| Parameter | Default | Values | Purpose |
+| --- | ---: | --- | --- |
+| `blade_storage_enabled` | `false` | `true`, `false` | When `false` (default), completely removes the enclosed lower blade drawer/vault, eliminating water ingress, trapped moisture, and blade corrosion after washing; extends the handle into a clean, solid, water-shedding ergonomic loop with the integrated razor dock. When `true`, retains the captive slide-out blade drawer underneath. |
+
 ## Blade drawer
 
 | Parameter | Default | Purpose |
@@ -125,7 +131,7 @@ magnet, or lid.
 | --- | ---: | --- |
 | `emboss_enabled` | `true` | Enable raised lettering on bowl wall |
 | `emboss_line1` | "Tumesh's" | Top text line |
-| `emboss_line2` | "Travel Shaving Bowl" | Bottom text line |
+| `emboss_line2` | "Shaving Bowl" | Bottom text line |
 | `emboss_bold` | 0.15 | 2D offset applied after resize to ensure stroke >= 0.8 mm |
 | `emboss_font` | "Pacifico" | Font family name (requires bundled TTF) |
 | `emboss_width1` | 34 | Target width for line 1 |

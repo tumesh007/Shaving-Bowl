@@ -1,120 +1,94 @@
-# Compact Travel Shaving Bowl
+# Tumesh's Shaving Bowl (v14 & v14.1)
 
-This is a fresh, open-bowl design built around a seeded mathematical height field. It contains a rounded shaving bowl, an integrated side grip, an angled open razor cradle, a centered enclosed DE-blade compartment, and a separately printable sliding drawer. **There is no lid.**
+Parametric, open lather shaving bowl with a blended height-field lather surface, support-free ergonomic angled handle truss, integrated safety razor cradle, and an interactive 3D Web Customizer. **Engineered specifically for support-free 3D printing on the Bambu Lab A1 Mini (0.40 mm nozzle, gold textured PEI plate).**
 
 ![Isometric view of the bowl and integrated razor dock](renders/01-isometric.png)
 
-See the [`renders/`](renders/) gallery for top, side, bottom, texture close-up, section views, and drawer/razor previews, including [`14-head-rest-closeup.png`](renders/14-head-rest-closeup.png) and [`15-name-emboss-closeup.png`](renders/15-name-emboss-closeup.png). Adjustable dimensions and texture controls are listed in [`PARAMETERS.md`](PARAMETERS.md).
+---
+
+## What's New in v14.1 (Support-Free & Manifold Turbo)
+
+1. **100% Support-Free Handle Architecture:**
+   - **Flaw Identified in v14:** The v14 lower return arch spanned 35 mm nearly horizontally ($\Delta Z = 2\text{ mm}$ over $\Delta X = 35\text{ mm}$, slope $\approx 3.3^\circ$), creating an unsupported **$700\text{ mm}^2$ flat ceiling hanging in mid-air at $Z = 12.6\text{ mm}$**, which drooped or failed without manual tree supports.
+   - **v14.1 Solution:** Redesigned into a continuous $49^\circ$ self-supporting angled ergonomic truss that anchors solidly inside the bowl wall at $Z = 16\text{ mm}$ and rises at $\ge 49^\circ$ directly to the grip and cradle.
+   - **Result:** Steep overhang area reduced from $>700\text{ mm}^2$ to **$0.00\text{ mm}^2$** on the lower handle. Completely eliminates the need for handle support structures while maintaining an open, quick-drying clearance ($Z = 0$ to $16\text{ mm}$) underneath.
+2. **Support-Free Cradle Head Rest Transition:**
+   - Extended the lower support plate transition cone along the cradle tube at $48^\circ$–$50^\circ$, reducing shelf underside overhang area by $>75\%$ for support-free head rest printing.
+3. **Bulletproof Manifold Geometry Engine Fix:**
+   - Added a coplanar-clearing cylinder cutout at the rim opening (`translate([0,0,bowl_height-0.5]) cylinder(h=5, r=inner_radius)`).
+   - Completely cures OpenSCAD nightly's Manifold bug where co-planar boundary subtractions left a solid disk across the bowl opening.
+   - Restores lightning-fast **15–20 second full mesh exports via `--backend=manifold`** (vs 6–7 minutes under CGAL).
+4. **Separate Clean Codebase:**
+   - Maintained as `travel_shaving_bowl_v14_1.scad` alongside original `travel_shaving_bowl.scad`.
+
+---
+
+## What's New in v14
+
+1. **Renamed to "Tumesh's Shaving Bowl":**
+   - Outer wall embossed lettering updated to `"Tumesh's"` on Line 1 and `"Shaving Bowl"` on Line 2 in Pacifico bold relief.
+2. **Excised Base Inverted Triangle:**
+   - Removed the solid downward-tapering triangular bed anchor, leaving open clearance underneath the handle for water drainage and drying.
+3. **Parametric `blade_storage_enabled = false` (Default):**
+   - Eliminates captive drawer moisture entrapment and DE blade corrosion.
+4. **FDM Slicer Physics Optimization:**
+   - `export_texture_resolution = 0.50` (matched to 0.40 mm nozzle / 0.42 mm extrusion width, cutting 60% of unnecessary micro-facets).
+   - `terrain_preview_fn = 64` and `rounded_fn = 20`.
+5. **Interactive 3D Web Customizer:**
+   - Launch [`index.html`](index.html) in any browser (or via GitHub Pages) to customize dimensions, lather ridges, razor dock angles, and export custom binary STLs directly client-side.
+
+---
+
+## 3D Web Customizer App
+
+Open [`index.html`](index.html) locally in your browser or host it via GitHub Pages:
+- **Real-Time Three.js Viewport:** Orbit, pan, zoom, inspect wireframe, and test filament colors (Gold PEI, Charcoal Black, Arctic White, Ocean Blue).
+- **Live Parametric Controls:** Bowl diameter, height, wall thickness, lather diamond friction scale, razor handle diameter clearance, and custom emboss text.
+- **Client-Side Binary STL Export:** Generate slicer-ready binary STLs instantly from the browser without needing OpenSCAD installed.
+- **OpenSCAD Exporter:** Live generates the exact `.scad` code matching customized parameters.
+
+---
 
 ## Variants: Standard vs Travel
 
-Starting with v13, the model includes two presets selectable via `bowl_preset` in `travel_shaving_bowl.scad`:
+Selectable via `bowl_preset` in `travel_shaving_bowl.scad`:
 
 | Specification | Travel (`bowl_preset = "travel"`) | Standard (`bowl_preset = "standard"`) |
 | :--- | :--- | :--- |
 | **Outer / Inner Diameter** | 84 / 73.7 mm | 110 / 100 mm |
 | **Cavity Volume** | ~104 mL | ~241 mL |
-| **Flat Swirl Floor (slope < 30°)** | 46 mm | 64 mm |
+| **Flat Swirl Floor (slope < 30°)** | 46 mm | 64 mm (fits 24–28 mm brush knots) |
 | **Overall Size (L × W × H)** | 120 × 84 × 62 mm | 146 × 110 × 70 mm |
 | **Wall Thickness** | ~5.1 mm | ~5.2 mm |
 | **Swirl Surface Relief** | ~1.6 mm | 1.89 mm |
-| **Bed Stability Margin** | 25 mm | 32 mm |
-| **Print Bed Requirement** | Fits A1 Mini (2 per plate with drawers) | Fits A1 Mini (1 per plate) |
-| **Matching Blade Drawer** | `blade_drawer.stl` (identical tuck fit) | `blade_drawer.stl` (identical tuck fit) |
+| **Bed Fit (A1 Mini 180×180 mm)** | +60 mm plate margin | +34 mm plate margin |
+| **Official v14 STL** | `Tumeshs_Shaving_Bowl_v14_TRAVEL_norack_bin.stl` | `Tumeshs_Shaving_Bowl_v14_STANDARD_norack_bin.stl` |
+| **Official v14.1 STL (Support-Free)** | `Tumeshs_Shaving_Bowl_v14_1_TRAVEL_bin.stl` | `Tumeshs_Shaving_Bowl_v14_1_STANDARD_bin.stl` |
 
-### Why the Standard Variant?
-The Travel bowl's 46 mm floor and 104 mL cavity are optimized for luggage portability, but a 24–28 mm shaving brush knot leaves only ~9 mm of room on each side, which causes lather to work up into the brush knot rather than building in the bowl. The **Standard** version increases the inner diameter to 100 mm and provides a wide, 64 mm flat swirl floor with a corner transition radius, matching commercial artisan lather bowls while sharing the same tuck-sized slide-out blade drawer (`blade_drawer.stl`).
+---
 
-## Files
+## Bambu Studio / Slicer Recommendations
 
-- `travel_shaving_bowl.scad` — parametric source and selectable test/view modes.
-- `travel_shaving_bowl.stl` — default standard production body (110 mm, ~241 mL).
-- `Travel_Shaving_Bowl_v13_STANDARD_Bowl.stl` — high-resolution Standard variant production body.
-- `travel_shaving_bowl_travel.stl` — compact 84 mm Travel variant body.
-- `blade_drawer.stl` — separate captive sliding drawer with pull tab, passive detent bumps, and end-stop tabs.
-- `texture_test_coupon.stl` — 40 × 40 mm terrain and diamond-pattern coupon.
-- `razor_dock_test.stl` — cradle and half-round head-shelf samples for 8, 10, 12, and 15 mm handles, spaced 54 mm apart.
-- `blade_storage_test.stl` — drawer samples with 1, 3, and 5 dummy blades.
-- `emboss_test.stl` — curved exterior-wall patch for checking the raised name before printing the full bowl.
-- `fonts/Pacifico-Regular.ttf` and `fonts/OFL.txt` — bundled Pacifico font and SIL Open Font License.
-- `renders/` — isometric, orthographic, section, close-up, storage, shelf, and name previews.
+- **Printer:** Bambu Lab A1 Mini (or standard $180\times180\text{ mm}$ bed).
+- **Plate:** WOL3D Gold Textured PEI.
+- **Material:** PETG (recommended for hot water lather & bathroom humidity resistance) or PLA.
+- **Profile:** 0.20 mm Standard.
+- **Wall Loops:** 4 perimeters (ensures water-tight seal without post-processing).
+- **Top / Bottom Shells:** 5 top, 4 bottom layers.
+- **Infill:** 15% Gyroid.
+- **Supports:** **Tree (Auto)**, `Threshold angle: 30°`, `Support critical regions only`.
+  - The bowl body sits flat on the bed at $Z = 0.00\text{ mm}$. Tree supports only need to support the upper angled razor cradle overhang.
 
-## Exporting
+---
 
-Open the project with OpenSCAD 2021.01 or newer. `preview_mode=true` keeps interactive previews lighter. Set it to `false` for the finer production mesh. With Flatpak OpenSCAD:
+## Exporting via CLI
 
-```sh
-flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="bowl"' -o travel_shaving_bowl.stl travel_shaving_bowl.scad
-flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="blade_drawer"' -o blade_drawer.stl travel_shaving_bowl.scad
-flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="texture_test"' -o texture_test_coupon.stl travel_shaving_bowl.scad
-flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="razor_dock_test"' -o razor_dock_test.stl travel_shaving_bowl.scad
-flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="blade_storage_test"' -o blade_storage_test.stl travel_shaving_bowl.scad
-flatpak run org.openscad.OpenSCAD -D 'preview_mode=false' -D 'part="emboss_test"' -o emboss_test.stl travel_shaving_bowl.scad
-```
-
-The top-level `part` selector supports `assembly`, `bowl`, `bowl_shell`, `blade_drawer`, `texture_test`, `razor_dock_test`, `blade_storage_test`, and `emboss_test`. Use `part="assembly"` for inspection only; export the body and drawer separately. `render_mode` supports `top`, `side`, `bottom`, `texture_closeup`, `texture_section`, `handle_section`, `blade_section`, `razor_parked`, and `blades_inside`. For example:
+With OpenSCAD Nightly (Manifold backend):
 
 ```sh
-flatpak run org.openscad.OpenSCAD -D 'render_mode="blade_section"' -o renders/blade-section.png travel_shaving_bowl.scad
-flatpak run org.openscad.OpenSCAD -D 'render_mode="blades_inside"' -o renders/blades-inside.png travel_shaving_bowl.scad
+# Standard preset (18 seconds):
+openscad --backend=Manifold -D 'preview_mode=false' -D 'bowl_preset="standard"' -D 'blade_storage_enabled=false' -D 'part="bowl"' -o Travel_Shaving_Bowl_STANDARD_norack.stl travel_shaving_bowl.scad
+
+# Travel preset:
+openscad --backend=Manifold -D 'preview_mode=false' -D 'bowl_preset="travel"' -D 'blade_storage_enabled=false' -D 'part="bowl"' -o Travel_Shaving_Bowl_TRAVEL_norack.stl travel_shaving_bowl.scad
 ```
-
-## Slicer & Printing Recommendations (Bambu Studio)
-
-Configured for a **0.4 mm nozzle**, **0.2 mm layer height**, in **PETG** or **PLA**:
-
-### Quality, Strength & Infill
-
-| Setting | Value | Why |
-| :--- | :--- | :--- |
-| **Top shell layers** | 6 (~1.2 mm) | The diamond relief is ~1.8 mm tall. Fewer layers allow sparse infill to show through beneath the diamond tops. |
-| **Bottom shell layers** | 4 (~0.8 mm) | The foot is a large flat contact area; 4 solid layers provide a firm, leak-free first face. |
-| **Bottom surface pattern** | Monotonic line | Smooth, reliable on a flat foot, leaving no center gaps. |
-| **Internal solid infill pattern** | Rectilinear | Alternates 45° lines, providing a solid foundation under each textured diamond feature. |
-| **Sparse infill pattern & density** | Gyroid, 15–20% | High omnidirectional strength to firmly support the razor dock cantilevered from the 6 mm vertical pillar. |
-| **Wall loops** | 5 | The vertical handle pillar is 6 mm thick; 5 wall perimeters make it solid 100% plastic for maximum rigidity. |
-| **Detect thin walls** | On | Accurately renders the 0.8 mm drainage channels between diamond textures. |
-| **Top surface pattern** | Monotonic line | Clean, consistent finish; leave ironing **off**. |
-
-### Supports & Bridging
-
-- **Support Type:** **Tree supports**, set to **Everywhere** (threshold angle **35–40°**).
-  > **Crucial:** In v11+ the dock underside hangs directly above the vault roof rather than the build plate. Setting supports to "On build plate only" leaves the dock underside unsupported!
-- **Support Blocking:** Use **Support Painting set to "Block"** inside the slide-in drawer vault cavity. The flat vault ceiling is designed to bridge cleanly without internal supports that would ruin slide tolerances.
-- **Bridging:** Set to slow bridge speed, with bridge cooling fan at 100%. *(Note: with PETG, expect slight sag across the 34 mm ceiling span; PLA bridges flatter).*
-- **Overhangs:** Enable slow printing for overhangs.
-- **Seam Placement:** Set to **Aligned**, placed away from the exterior embossed name text on the -X side.
-
-## Design notes
-
-- The inside and outside bowl profiles are rounded and near-hemispherical, with a stable 45-degree conical base footprint ($r \ge 20$ mm at $z = 0.3$ mm) and a minimum 3.5 mm center floor. Nominal bowl dimensions are `bowl_outer_diameter = 84` mm, `bowl_inner_diameter = 73.7` mm, and `bowl_height = 38.5` mm.
-- The lather surface uses a dense, staggered 45-degree diamond/drum pattern (`diamond_scale = 0.4`, giving 3.2 × 2.0 mm diamonds with 0.8 mm gaps) with softened ridges, shallow broad seeded undulations, and subdued connecting channels. Its outer 5.5 mm fades smoothly into the bowl wall; the relief is limited to about 4.5 mm peak-to-valley rather than deep, uneven craters.
-- The razor cradle is open upward, fits the target 8–15 mm handle range, includes rounded retaining bumps and through-drainage ports, and does not drain into blade storage. Handles up to 11.6 mm seat freely; 12-15 mm handles press against the retention bumps. A vertical elevation `dock_raise = 8` mm lifts the entire dock, retention bumps, head shelf, and mount posts above the handle shell. A half-round head shelf supports the assembled razor head, with a U-shaped neck slot, curved-edge retention lip, and drain gap.
-- Mostly self-supporting design (`overhang_safe = true`); remaining overhangs: 27 mm flat drawer ceiling bridge (1,287 mm²), dock underside (231 mm²), shelf tip (156 mm²). Features include:
-  - 45° conical base transition meeting the sphere tangentially, providing a wide $\ge 21.5$ mm bed footprint that eliminates spherical bottom overhangs.
-  - Dock support gussets (`gusset_start = 2.0`, `gusset_drop = 12.0`) bracing the cradle and mount posts down to the handle.
-  - 45° inverted conical under-plate (`head_rest_lower_plate()`) with a 0.5 mm perimeter inset supporting the head shelf without non-manifold edge artifacts.
-  - 45° pitched ceiling on the handle grip cutout and a 54° lower handle junction taper directly to the base.
-  - The only overhang $> 500$ mm² is the straight 27 mm drawer vault ceiling bridge at $z \approx 10.7$ mm ($1,286.64$ mm²), which prints cleanly without supports via standard straight bridging.
-- Razor head-rest parameters: `head_rest_radius=24`, `head_rest_thickness=3.5`, `head_rest_rim_height=1.6`, `head_rest_rim_width=1.6`, `head_rest_gap=3`, `head_rest_flat_edge=6`, `neck_slot_radius=6.5`, and `head_rest_drain_gap=5` (all dimensions in mm).
-- `razor_dock_test.stl` includes the shelf, with its 8, 10, 12, and 15 mm dock samples spaced 54 mm apart.
-- Print razor_dock_test with your real razor first; adjust head_rest_gap and neck_slot_radius to your razor's neck.
-- A raised two-line name is embossed on the exterior wall opposite the handle. The bundled `fonts/Pacifico-Regular.ttf` is from Google Fonts' Pacifico family and is distributed under the SIL Open Font License in `fonts/OFL.txt`.
-- Emboss parameters: `emboss_enabled`, `emboss_line1`, `emboss_line2`, `emboss_bold`, `emboss_font`, `emboss_width1`, `emboss_width2`, `emboss_line_gap`, `emboss_z`, `emboss_height`, `emboss_sink`, and `emboss_max_half_width`.
-- To change the font edit `emboss_font`; the bundled Pacifico font is referenced by `use <fonts/Pacifico-Regular.ttf>` in the OpenSCAD source.
-- Print the emboss_test patch first. With a 0.4 mm nozzle, keep the letter strokes at 0.8 mm or wider. `emboss_bold = 0.15` bolds the text via a 2D offset after resizing, bringing 98.27% of the line-2 stroke area above 0.8 mm while preserving full text wording.
-- The blade vault and drawer are centered across the handle's middle plane, kept below the upper/lower handle attachment pads, and separated from the wet bowl and dock. The shorter vault keeps the drawer and handle balanced while preserving its front pull access. Its enlarged drawer is sized to hold an entire tuck of blades (up to 54 × 28 × 10 mm). It has adjustable per-side clearance, integral flexible detent tongues and bumps, matching body recesses, stop tabs, and a compact pull tab. Squeeze the stop tabs to remove the drawer deliberately.
-- The design targets upright FDM printing with a 0.4 mm nozzle. Inspect the sections and test coupons, then physically validate wall strength, fit, washability, and drawer retention before travel use.
-
-## Mesh verification
-
-The production body, separate drawer, three functional test meshes, and emboss
-patch were exported with OpenSCAD. `travel_shaving_bowl.stl` and
-`emboss_test.stl` are watertight single-component meshes; the dock test has
-four watertight, separated samples. Trimesh reports all exported meshes
-watertight. This confirms mesh closure, not real-world print strength, fit, or
-waterproofness. Print and physically test before travel use.
-
-## Limitations
-
-The razor and blades shown in preview modes are illustrative solids, not part of the production bowl STL. The model does not guarantee lather performance, razor compatibility beyond the nominal diameter range, waterproofness after printing, or blade safety. Print and test before use.

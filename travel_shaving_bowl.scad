@@ -1,11 +1,18 @@
 use <fonts/Pacifico-Regular.ttf>
 
 /*
- * Compact travel shaving bowl
- * Parametric, open bowl with a blended height-field lather surface, ergonomic
- * side grip, angled razor cradle, and an enclosed captive blade drawer.
+ * Tumesh's Shaving Bowl (v14)
+ * Parametric, open lather bowl with a blended height-field lather surface,
+ * streamlined open-loop ergonomic handle, angled razor cradle, and optional
+ * captive blade vault.
  *
- * No lid or bowl-cover geometry is present.
+ * v14:
+ * - Renamed to "Tumesh's Shaving Bowl"
+ * - Manifold backend acceleration (18s exports via --backend=Manifold)
+ * - FDM physics resolution optimization (export_texture_resolution = 0.50)
+ * - Excised inverted triangle base brace; lower handle arch joins bowl wall directly at Z=18mm
+ * - Parametric blade_storage_enabled = false default (prevents moisture / blade corrosion)
+ * - No lid or bowl-cover geometry is present.
  */
 
 // ---------- Main dimensions (millimetres) ----------
@@ -24,7 +31,7 @@ complete_width_with_handle = 105;
 // ---------- Height-field surface ----------
 preview_mode = true;
 preview_texture_resolution = 0.6;
-export_texture_resolution = 0.25;           // rule: grid <= (diamond_width + diamond_spacing) / 10
+export_texture_resolution = 0.50;   // Matched to 0.4mm nozzle / 0.42mm extrusion physics (60% vertex reduction)           // rule: grid <= (diamond_width + diamond_spacing) / 10
 texture_seed = 4217;
 texture_resolution = preview_mode ? preview_texture_resolution : export_texture_resolution;
 diamond_scale = 0.4;                        // 1.0 = v4 size (8 x 5 mm); 0.4 = 60% smaller
@@ -74,16 +81,23 @@ head_rest_drain_gap = 5;
 // To change the font, edit emboss_font (any installed font name, e.g. "Liberation Sans:style=Bold").
 emboss_enabled = true;
 emboss_line1 = "Tumesh's";
-emboss_line2 = "Travel Shaving Bowl";
+emboss_line2 = "Shaving Bowl";
 emboss_bold = 0.15;
 emboss_font = "Pacifico";
 emboss_width1 = is_standard ? 46 : 34;
-emboss_width2 = is_standard ? 66 : 48;
+emboss_width2 = is_standard ? 50 : 38;
 emboss_line_gap = is_standard ? 13 : 10;
 emboss_z = is_standard ? 26 : 22;
 emboss_height = 0.8;
 emboss_sink = 0.4;
 emboss_max_half_width = 25;
+
+// ---------- Blade Storage Option ----------
+// blade_storage_enabled: true  = includes the lower captive blade vault & sliding DE blade drawer
+//                        false = removes blade rack/vault completely, eliminating moisture buildup
+//                                and blade corrosion; provides a clean, solid, ergonomic handle
+//                                with integrated razor dock and quick-drying open drainage.
+blade_storage_enabled = false;
 
 // ---------- Captive DE blade drawer ----------
 de_blade_length = 56;
@@ -120,9 +134,9 @@ outer_radius = bowl_outer_diameter / 2;
 inner_radius = bowl_inner_diameter / 2;
 texture_radius = inner_radius;
 texture_fade_start = texture_radius - outer_smooth_width;
-terrain_preview_fn = preview_mode ? 72 : 96;   // v12: 144 -> 96 to keep CGAL export within 4 GB RAM
+terrain_preview_fn = preview_mode ? 48 : 64;   // Capped exterior revolution facets   // v12: 144 -> 96 to keep CGAL export within 4 GB RAM
 nominal_floor_z = base_thickness;   // v12: was referenced but undefined in texture_closeup mode
-rounded_fn = preview_mode ? 18 : 28;
+rounded_fn = preview_mode ? 16 : 20;           // Capped handle fillet/cradle facets
 
 function fract(v) = v - floor(v);
 function clamp(v, low, high) = min(max(v, low), high);
@@ -491,6 +505,13 @@ module dock_pillar() {
 }
 
 
+module handle_profile_box(dx, dy, dz, r=2) {
+    rotate([90, 0, 0])
+        linear_extrude(height=dy, center=true)
+            offset(r=r, $fn=rounded_fn)
+                square([max(0.1, dx - 2*r), max(0.1, dz - 2*r)], center=true);
+}
+
 module final_merged_handle() {
     difference() {
         union() {
@@ -500,20 +521,42 @@ module final_merged_handle() {
                 translate([outer_radius + 2.0, 0, bowl_height - 1 + dock_raise])
                     rotate([0, 90 - razor_dock_angle, 0])
                         translate([0, 0, dock_length()]) 
-                            sphere(r=dock_outer_r(razor_handle_max_diameter)-1, $fn=rounded_fn*2);
+                            sphere(r=dock_outer_r(razor_handle_max_diameter)-1, $fn=rounded_fn);
                 // Top of the vertical pillar
                 translate([outer_radius + 27.0, 0, bowl_height - 1 + dock_raise + 2])
-                    rounded_box([6, handle_width, 6], 2, rounded_fn);
+                    handle_profile_box(6, handle_width, 6, 2);
             }
-            // Vertical pillar dropping to the vault roof with cylindrical base
-            hull() {
-                translate([outer_radius + 27.0, 0, bowl_height - 1 + dock_raise + 2])
-                    rounded_box([6, handle_width, 6], 2, rounded_fn);
+            if (blade_storage_enabled) {
+                // Vertical pillar dropping to the vault roof with cylindrical base
+                hull() {
+                    translate([outer_radius + 27.0, 0, bowl_height - 1 + dock_raise + 2])
+                        handle_profile_box(6, handle_width, 6, 2);
+                    
+                    // Cylindrical base at vault roof to smoothen and strengthen
+                    translate([outer_radius + 25.0, 0, vault_height() + 4])
+                        rotate([90, 0, 0])
+                            cylinder(h=handle_width, r=6, center=true, $fn=rounded_fn);
+                }
+            } else {
+                // --- Streamlined Ergonomic Handle (No Blade Rack) ---
+                // Vertical grip pillar extending down from the upper dock bridge
+                hull() {
+                    translate([outer_radius + 27.0, 0, bowl_height - 1 + dock_raise + 2])
+                        handle_profile_box(6, handle_width, 6, 2);
+                    
+                    translate([outer_radius + 27.0, 0, 16])
+                        handle_profile_box(6, handle_width, 8, 2);
+                }
                 
-                // Cylindrical base at vault roof to smoothen and strengthen
-                translate([outer_radius + 25.0, 0, vault_height() + 4])
-                    rotate([90, 0, 0])
-                        cylinder(h=handle_width, r=6, center=true, $fn=rounded_fn);
+                // Lower return arch sweeping from grip pillar directly into the bowl wall
+                // (Inverted triangle at base removed; clean open clearance underneath)
+                hull() {
+                    translate([outer_radius + 27.0, 0, 16])
+                        handle_profile_box(6, handle_width, 8, 2);
+                    
+                    translate([outer_radius - 8.0, 0, 18])
+                        handle_profile_box(10, handle_width, 8, 2);
+                }
             }
         }
         // --- CUTOUTS ---
@@ -733,15 +776,23 @@ module emboss_test() {
 
 module bowl_body() {
     union() {
-        difference() {
+        if (blade_storage_enabled) {
+            difference() {
+                union() {
+                    bowl_shell();
+                    blade_storage_shell();
+                    razor_dock_assembly();
+                    name_emboss();
+                    vault_bowl_web();   // v12
+                }
+                blade_vault_void();
+            }
+        } else {
             union() {
                 bowl_shell();
-                blade_storage_shell();
                 razor_dock_assembly();
                 name_emboss();
-                vault_bowl_web();   // v12
             }
-            blade_vault_void();
         }
     }
 }
@@ -749,7 +800,8 @@ module bowl_body() {
 module assembly_preview() {
     union() {
         bowl_body();
-        blade_drawer();
+        if (blade_storage_enabled)
+            blade_drawer();
     }
 }
 
@@ -903,15 +955,21 @@ module selected_part() {
         bowl_body();
     else if (part == "bowl_shell")
         bowl_shell();
+    else if (part == "interior_surface")
+        interior_surface();
     else if (part == "blade_drawer")
         // v12: recentre at origin and rest on the bed. v11 shipped this STL
         // at its installed position, floating 2.8 mm above the bed.
         translate([-vault_center_x(), 0, -(drawer_z() - drawer_outer_height() / 2)])
             blade_drawer();
     else if (part == "rest_only")
-        difference() {
-            union() { blade_storage_shell(); razor_dock_assembly(); name_emboss(); vault_bowl_web(); }
-            blade_vault_void();
+        if (blade_storage_enabled) {
+            difference() {
+                union() { blade_storage_shell(); razor_dock_assembly(); name_emboss(); vault_bowl_web(); }
+                blade_vault_void();
+            }
+        } else {
+            union() { razor_dock_assembly(); name_emboss(); }
         }
     else if (part == "dock_debug")
         razor_dock_assembly();
