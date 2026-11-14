@@ -425,12 +425,12 @@ module handle_profile_box(dx, dy, dz, r=2) {
 // v14.1: Streamlined Support-Free Ergonomic Truss Handle
 // Fully self-supporting at 49 degrees with zero horizontal ceilings and zero mid-air bridges.
 module final_merged_handle() {
-    pillar_reach = is_standard ? 17.0 : 13.5;
+    pillar_reach = is_standard ? 16.0 : 13.0;
     pillar_x = outer_radius + pillar_reach;
     pillar_top_z = bowl_height - 1 + dock_raise + 1.5;
     
-    wall_start_x = is_standard ? (outer_radius - 15.0) : (outer_radius - 13.0);
-    wall_start_z = is_standard ? 14.0 : 10.0;
+    wall_start_z = is_standard ? 12.0 : 10.0;
+    wall_start_x = is_standard ? 34.0 : 25.0;
     actual_wall_x = wall_start_x;
     
     difference() {
@@ -515,10 +515,13 @@ module name_emboss() {
 }
 
 module bowl_body() {
-    union() {
-        bowl_shell();
-        razor_dock_assembly();
-        name_emboss();
+    difference() {
+        union() {
+            bowl_exterior_blank();
+            razor_dock_assembly();
+            name_emboss();
+        }
+        interior_surface();
     }
 }
 
