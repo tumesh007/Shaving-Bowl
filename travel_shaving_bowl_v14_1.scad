@@ -317,14 +317,10 @@ module interior_surface() {
     }
 }
 
-// v14.1: Bulletproof Manifold CSG difference. Added coplanar cylinder cutout
-// across the rim opening to guarantee zero solid lid cap under Manifold backend.
 module bowl_shell() {
     difference() {
         bowl_exterior_blank();
         interior_surface();
-        translate([0, 0, bowl_height - 0.5])
-            cylinder(h=5, r=inner_radius, $fn=terrain_preview_fn);
     }
 }
 
