@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Tumesh (https://github.com/tumesh007)
+# SPDX-License-Identifier: CC-BY-NC-SA-4.0
 import subprocess
 import os
 import sys

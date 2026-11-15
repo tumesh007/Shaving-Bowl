@@ -107,3 +107,19 @@ openscad --backend=Manifold -D 'preview_mode=false' -D 'bowl_preset="standard"' 
 # Travel preset:
 openscad --backend=Manifold -D 'preview_mode=false' -D 'bowl_preset="travel"' -D 'blade_storage_enabled=false' -D 'part="bowl"' -o Travel_Shaving_Bowl_TRAVEL_norack.stl travel_shaving_bowl.scad
 ```
+
+---
+
+## License
+
+This project is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0). See LICENSE.
+
+You may print it for yourself, share it and modify it, as long as you:
+- give credit to Tumesh,
+- do not sell it or its prints for money,
+- share any modified version under the same licence.
+
+For commercial use (selling prints or licensing the design), ask the author first.
+
+The Pacifico font is under the SIL Open Font License and is not covered by this licence (see NOTICE.md).
+
